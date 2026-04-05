@@ -44,3 +44,6 @@ Thumbs.db
 # Project Requirements
 ProjectRequirements/
 .claude/
+
+# Figma design reference exports (too large for repo)
+src/assets/design-reference/
