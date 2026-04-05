@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +9,20 @@
     box-sizing: border-box;
   }
 
+  html,
+  body,
+  #root {
+    @apply min-h-full;
+  }
+
   body {
-    @apply bg-neutral-50 text-neutral-900 font-sans;
+    @apply overflow-x-hidden bg-grey-100 font-sans text-grey-900 antialiased;
+  }
+}
+
+/* Design frame: 1920×1080 — content column caps at 1920px; 177px gutters → 1566px inner width */
+@layer components {
+  .layout-frame {
+    @apply mx-auto w-full max-w-[1920px] px-4 sm:px-8 2xl:px-[177px];
   }
 }
