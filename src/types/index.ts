@@ -65,8 +65,8 @@ export interface Course {
   basePrice: number
   durationWeeks: number
   isFeatured: boolean
-  avgRating: number
-  reviewCount: number
+  avgRating?: number | null
+  reviewCount?: number | null
   category: Category
   topic: Topic
   instructor: Instructor

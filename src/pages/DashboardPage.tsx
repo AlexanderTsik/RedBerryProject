@@ -1,9 +1,25 @@
-// Phase 3 — Dashboard implementation
+import { useAuth } from '../store/AuthContext'
+import HeroSlider from '../components/dashboard/HeroSlider'
+import ContinueLearning from '../components/dashboard/ContinueLearning'
+import FeaturedCourses from '../components/dashboard/FeaturedCourses'
+
 export default function DashboardPage() {
+  const { isAuthenticated } = useAuth()
+
   return (
-    <div className="max-w-content mx-auto px-8 py-12">
-      <h1 className="text-3xl font-bold text-neutral-900">Dashboard</h1>
-      <p className="text-neutral-500 mt-2">Featured courses and learning progress — coming soon.</p>
+    <div className="layout-frame flex flex-col gap-[64px] py-[64px]">
+      <HeroSlider />
+      {isAuthenticated ? (
+        <>
+          <ContinueLearning />
+          <FeaturedCourses />
+        </>
+      ) : (
+        <>
+          <FeaturedCourses />
+          <ContinueLearning />
+        </>
+      )}
     </div>
   )
 }

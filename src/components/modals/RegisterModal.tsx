@@ -12,9 +12,9 @@ import {
   authPrimaryButtonClass,
   authTextInputClass,
 } from './AuthModalChrome'
-import IconEyeOpen from '../../assets/icons/modal/icon-eye-open.svg?react'
-import IconEyeClosed from '../../assets/icons/modal/icon-eye-closed.svg?react'
-import IconUpload from '../../assets/icons/modal/icon-upload.svg?react'
+import IconEyeOpen from '../../assets/icons/icon-set/icon-eye-open.svg?react'
+import IconEyeClosed from '../../assets/icons/icon-set/icon-eye-closed.svg?react'
+import IconUpload from '../../assets/icons/icon-set/icon-upload.svg?react'
 
 const formSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -285,20 +285,23 @@ export default function RegisterModal() {
                         <p className="text-[12px] leading-[1.21] text-error">{errors.username.message}</p>
                       )}
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-[12px]">
                       <span className={authFieldLabelClass}>Upload Avatar</span>
-                      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-[1.5px] border-grey-200 py-[30px] transition-colors hover:border-grey-300">
+                      <label className="flex cursor-pointer flex-col items-center justify-center gap-[8px] rounded-[8px] border-[1.5px] border-grey-200 py-[30px] transition-colors hover:border-grey-300">
                         <input
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/webp"
                           className="sr-only"
                           onChange={e => setAvatar(e.target.files?.[0] || null)}
                         />
-                        <IconUpload className="h-[34px] w-[34px] text-grey-300" aria-hidden />
-                        <span className="text-center text-[14px] font-medium leading-[1.21] text-grey-500">
-                          Drag and drop or Upload file
-                        </span>
-                        <span className="text-center text-[12px] leading-[1.21] text-grey-300">JPG, PNG or WebP</span>
+                        <IconUpload className="h-[34px] w-[34px]" aria-hidden />
+                        <div className="flex flex-col items-center gap-[6px]">
+                          <span className="text-center text-[14px] font-medium leading-[1.21] text-grey-500">
+                            Drag and drop or{' '}
+                            <span className="text-primary-600 underline decoration-solid">Upload file</span>
+                          </span>
+                          <span className="text-center text-[12px] font-normal leading-[1.21] text-grey-300">JPG, PNG or WebP</span>
+                        </div>
                       </label>
                       {avatar && (
                         <p className="text-center text-[12px] text-grey-500">{avatar.name}</p>
@@ -341,7 +344,7 @@ export default function RegisterModal() {
             <button
               type="button"
               onClick={switchToLogin}
-              className="text-[14px] font-medium leading-[1.21] text-grey-900 transition-colors hover:text-primary"
+              className="text-[14px] font-medium leading-[1.21] text-grey-900 underline decoration-solid transition-colors hover:text-primary"
             >
               Log In
             </button>
