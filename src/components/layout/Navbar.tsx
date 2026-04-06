@@ -45,17 +45,22 @@ export default function Navbar() {
               className="box-border flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-transparent bg-transparent p-0 transition-colors hover:border-primary-200"
               aria-label="Profile"
             >
-              {user?.avatar ? (
-                <span className="relative h-full w-full overflow-hidden rounded-full">
-                  <img src={user.avatar} alt="" className="h-full w-full object-cover" />
-                  <span
-                    className="absolute bottom-0 right-0 box-border h-[15px] w-[15px] rounded-full border-2 border-white bg-warning"
-                    aria-hidden
-                  />
-                </span>
-              ) : (
-                <img src={avatarDefault} alt="" className="h-full w-full max-h-14 max-w-14 rounded-full object-cover" />
-              )}
+              {/* Always show a relative wrapper so the status dot is always visible */}
+              <span className="relative flex h-full w-full items-center justify-center">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  <img src={avatarDefault} alt="" className="h-full w-full rounded-full object-cover" />
+                )}
+                {/* Status dot: orange = incomplete, green = complete (Figma node 457-2936, 18×18 px) */}
+                <span
+                  aria-hidden
+                  className={[
+                    'absolute bottom-0 right-0 box-border h-[18px] w-[18px] rounded-full border-2 border-white',
+                    user?.profileComplete ? 'bg-success' : 'bg-warning',
+                  ].join(' ')}
+                />
+              </span>
             </button>
           </div>
         ) : (

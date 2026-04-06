@@ -12,8 +12,8 @@ import {
   authPrimaryButtonClass,
   authTextInputClass,
 } from './AuthModalChrome'
-import IconEyeOpen from '../../assets/icons/modal/icon-eye-open.svg?react'
-import IconEyeClosed from '../../assets/icons/modal/icon-eye-closed.svg?react'
+import IconEyeOpen from '../../assets/icons/icon-set/icon-eye-open.svg?react'
+import IconEyeClosed from '../../assets/icons/icon-set/icon-eye-closed.svg?react'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),

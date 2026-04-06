@@ -159,8 +159,10 @@ export default function ProfileModal() {
     if (file) handleFile(file)
   }
 
+  const MAX_AVATAR_BYTES = 1 * 1024 * 1024 // 1 MB
+
   const onSubmit = async (data: ProfileFormData) => {
-    if (avatar && avatar.size > 2 * 1024 * 1024) return
+    if (avatar && avatar.size > MAX_AVATAR_BYTES) return
     setApiError(null)
     setIsSubmitting(true)
     try {
@@ -180,8 +182,11 @@ export default function ProfileModal() {
       if (fieldErrors) {
         const firstField = Object.keys(fieldErrors)[0]
         setApiError(fieldErrors[firstField][0])
+      } else if (error.response?.data?.message) {
+        setApiError(error.response.data.message)
       } else {
-        setApiError(error.response?.data?.message || 'Failed to update profile.')
+        // Likely a network error or server-side 413 (file too large)
+        setApiError('Image is too large. Please use a file under 1 MB.')
       }
     } finally {
       setIsSubmitting(false)
@@ -226,9 +231,8 @@ export default function ProfileModal() {
             )}
             {/* Completion dot */}
             <span
-              className={`absolute bottom-0 right-0 size-3 rounded-full border-2 border-white ${
-                isComplete ? 'bg-success' : 'bg-warning'
-              }`}
+              className={`absolute bottom-0 right-0 size-3 rounded-full border-2 border-white ${isComplete ? 'bg-success' : 'bg-warning'
+                }`}
             />
           </div>
 
@@ -236,9 +240,8 @@ export default function ProfileModal() {
           <div className="flex flex-col gap-1">
             <p className="text-[20px] font-semibold leading-6 text-[#0a0a0a]">{user?.username}</p>
             <p
-              className={`pl-0.5 text-[10px] font-normal leading-normal ${
-                isComplete ? 'text-success' : 'text-warning'
-              }`}
+              className={`pl-0.5 text-[10px] font-normal leading-normal ${isComplete ? 'text-success' : 'text-warning'
+                }`}
             >
               {isComplete ? 'Profile is Complete' : 'Incomplete Profile'}
             </p>
@@ -371,11 +374,10 @@ export default function ProfileModal() {
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
-              className={`flex w-full flex-col items-center gap-2 rounded-lg border-[1.5px] bg-white py-[30px] transition-colors ${
-                isDragging
+              className={`flex w-full flex-col items-center gap-2 rounded-lg border-[1.5px] bg-white py-[30px] transition-colors ${isDragging
                   ? 'border-primary bg-primary-50'
                   : 'border-grey-200 hover:border-grey-300'
-              }`}
+                }`}
             >
               {avatar ? (
                 <p className="px-4 text-center text-[14px] font-medium text-grey-600 truncate max-w-full">
@@ -396,15 +398,15 @@ export default function ProfileModal() {
                 </>
               )}
             </button>
-            {avatar && avatar.size > 2 * 1024 * 1024 && (
-              <p className="text-[12px] leading-normal text-error">File must be under 2MB</p>
+            {avatar && avatar.size > MAX_AVATAR_BYTES && (
+              <p className="text-[12px] leading-normal text-error">File must be under 1 MB</p>
             )}
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || (avatar !== null && avatar.size > 2 * 1024 * 1024)}
+            disabled={isSubmitting || (avatar !== null && avatar.size > MAX_AVATAR_BYTES)}
             className="mt-1 flex h-[47px] w-full items-center justify-center rounded-lg bg-primary text-[16px] font-medium leading-6 text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? 'Updating…' : 'Update Profile'}
