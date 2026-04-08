@@ -1,0 +1,115 @@
+import { Link } from 'react-router-dom'
+import type { Course } from '../../types'
+import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
+
+// Map category name → icon-set SVG (loaded eagerly so vite can tree-shake)
+import IconDevelopment from '../../assets/icons/icon-set/icon-development.svg?react'
+import IconDesign from '../../assets/icons/icon-set/icon-design.svg?react'
+import IconBusiness from '../../assets/icons/icon-set/icon-business.svg?react'
+import IconDataScience from '../../assets/icons/icon-set/icon-data-science.svg?react'
+import IconMarketing from '../../assets/icons/icon-set/icon-marketing.svg?react'
+
+const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  Development: IconDevelopment,
+  Design: IconDesign,
+  Business: IconBusiness,
+  'Data Science': IconDataScience,
+  Marketing: IconMarketing,
+}
+
+function formatPrice(price: string | number): string {
+  const n = typeof price === 'string' ? parseFloat(price) : price
+  return `$${Math.floor(n).toLocaleString('en-US')}`
+}
+
+interface Props {
+  course: Course
+}
+
+export default function CatalogCourseCard({ course }: Props) {
+  const CatIcon = CATEGORY_ICON[course.category.name]
+
+  return (
+    <Link
+      to={`/courses/${course.id}`}
+      className="flex flex-col bg-white border border-grey-100 rounded-[12px] overflow-clip p-[20px] no-underline transition-[filter] duration-200 hover:drop-shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:drop-shadow-[0px_0px_45px_rgba(138,130,212,0.15)]"
+    >
+      {/* Inner wrapper with gap-[18px] */}
+      <div className="flex flex-col gap-[18px] items-start w-full">
+        {/* Top section: image + meta + title + category */}
+        <div className="flex flex-col gap-[18px] items-start w-full">
+          {/* Image */}
+          <div className="w-full h-[181px] relative rounded-[10px] overflow-hidden shrink-0">
+            {course.image ? (
+              <img
+                src={course.image}
+                alt={course.title}
+                className="absolute inset-0 size-full object-cover rounded-[10px]"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-primary-50 rounded-[10px]" />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex flex-col items-start w-full">
+            <div className="flex flex-col gap-[12px] items-start w-full">
+              {/* Meta: instructor | weeks | star rating */}
+              <div className="flex flex-wrap gap-y-[8px] items-center justify-between w-full">
+                <div className="flex gap-[8px] items-center">
+                  <p className="text-[14px] font-medium leading-normal text-grey-300 whitespace-nowrap">
+                    {course.instructor.name}
+                  </p>
+                  <div className="w-[2px] h-[14px] bg-grey-200 rounded-[100px] shrink-0" />
+                  <p className="text-[14px] font-medium leading-normal text-grey-300 whitespace-nowrap">
+                    {course.durationWeeks} Weeks
+                  </p>
+                </div>
+                {course.avgRating != null && (
+                  <div className="flex items-center gap-[4px] shrink-0">
+                    <IconStarFill className="size-[18px]" aria-hidden />
+                    <span className="text-[14px] font-medium text-grey-600 leading-normal whitespace-nowrap">
+                      {course.avgRating.toFixed(1)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Title */}
+              <p className="text-[24px] font-semibold leading-normal text-grey-950">
+                {course.title}
+              </p>
+            </div>
+          </div>
+
+          {/* Category chip */}
+          <div className="flex flex-wrap gap-y-[8px] items-start w-full">
+            <div className="flex items-center justify-center gap-[6px] bg-grey-100 rounded-[12px] px-[12px] py-[8px]">
+              {CatIcon && <CatIcon className="size-[18px] shrink-0" />}
+              <span className="text-[16px] font-medium leading-[24px] text-grey-600 whitespace-nowrap text-center">
+                {course.category.name}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Price + Details row */}
+        <div className="flex items-center justify-between w-full h-[48px]">
+          <div className="flex flex-col items-start justify-center leading-normal whitespace-nowrap w-[144px]">
+            <span className="text-[12px] font-medium text-grey-300">
+              Starting from
+            </span>
+            <span className="text-[24px] font-semibold text-grey-700">
+              {formatPrice(course.basePrice)}
+            </span>
+          </div>
+          <div className="flex items-center justify-center bg-primary rounded-[8px] px-[25px] py-[17px] h-full shrink-0">
+            <span className="text-[16px] font-medium leading-[24px] text-white whitespace-nowrap text-center">
+              Details
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}

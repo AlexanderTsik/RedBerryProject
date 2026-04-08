@@ -15,7 +15,7 @@ export default function FeaturedCourseCard({ course }: Props) {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="flex flex-col gap-[24px] items-start bg-white border border-grey-100 rounded-[12px] p-[20px] flex-1 min-w-0 no-underline transition-shadow hover:shadow-[0px_0px_18px_0px_rgba(0,0,0,0.08)]"
+      className="flex flex-col gap-[24px] items-start bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] flex-1 min-w-0 no-underline transition-all duration-200 hover:border-primary-200 hover:shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:border-primary-300 active:border-[1px] active:shadow-[0px_0px_35px_rgba(138,130,212,0.25)]"
     >
       {/* Image */}
       <div className="flex flex-col gap-[16px] items-start w-full">

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useModal } from '../../hooks/useModal'
 import logo from '../../assets/icons/logo.svg'
@@ -14,6 +14,8 @@ const navIconClass = 'h-[26px] w-[26px] shrink-0'
 export default function Navbar() {
   const { isAuthenticated, user } = useAuth()
   const { openModal, openSidebar } = useModal()
+  const location = useLocation()
+  const isBrowsePage = location.pathname === '/courses' || location.pathname.startsWith('/courses/')
 
   return (
     <header className="w-full shrink-0 border-b border-grey-200 bg-grey-100 shadow-[0_0_11.7px_rgba(0,0,0,0.04)]">
@@ -25,7 +27,7 @@ export default function Navbar() {
         {isAuthenticated ? (
           <div className="flex items-center gap-9">
             <nav className="flex h-14 items-center">
-              <Link to="/courses" className={`${navItemClass} cursor-pointer border-0 bg-transparent`}>
+              <Link to="/courses" className={`${navItemClass} cursor-pointer border-0 bg-transparent ${isBrowsePage ? '!text-primary' : ''}`}>
                 <NavSparkleIcon className={navIconClass} aria-hidden />
                 Browse Courses
               </Link>
@@ -66,7 +68,7 @@ export default function Navbar() {
         ) : (
           <div className="flex items-center gap-[43px]">
             <nav className="flex h-14 items-center">
-              <Link to="/courses" className={`${navItemClass} border-0 bg-transparent`}>
+              <Link to="/courses" className={`${navItemClass} border-0 bg-transparent ${isBrowsePage ? '!text-primary' : ''}`}>
                 <NavSparkleIcon className={navIconClass} aria-hidden />
                 Browse Courses
               </Link>
