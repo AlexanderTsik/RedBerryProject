@@ -12,7 +12,7 @@ export default function ProgressCourseCard({ enrollment }: Props) {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="flex flex-col gap-[8px] items-start bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] shadow-[0px_0px_11.7px_0px_rgba(0,0,0,0.04)] w-full no-underline transition-shadow hover:shadow-[0px_0px_18px_0px_rgba(0,0,0,0.08)]"
+      className="flex flex-col gap-[8px] items-start bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] shadow-[0px_0px_11.7px_0px_rgba(0,0,0,0.04)] w-full no-underline transition-all duration-200 hover:border-primary-200 hover:shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:border-primary-300 active:border-[1px] active:shadow-[0px_0px_35px_rgba(138,130,212,0.25)]"
     >
       {/* Top: thumbnail + meta */}
       <div className="flex h-[123px] items-stretch w-full gap-0">
