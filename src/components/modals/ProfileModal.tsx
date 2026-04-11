@@ -6,7 +6,7 @@ import { useModal } from '../../hooks/useModal'
 import { useAuth } from '../../store/AuthContext'
 import { updateProfile } from '../../api/profile'
 import { AuthModalChrome, authFieldLabelClass } from './AuthModalChrome'
-import IconUpload from '../../assets/icons/modal/icon-upload.svg?react'
+import IconUpload from '../../assets/icons/icon-set/icon-upload.svg?react'
 
 // ─── Inline icons ──────────────────────────────────────────────────────────────
 

@@ -2,7 +2,9 @@ import { apiClient } from './client'
 import type { Enrollment } from '../types'
 
 export interface EnrollPayload {
-  session_type_id: number
+  courseId: number
+  courseScheduleId: number
+  sessionTypeId: number
   force?: boolean
 }
 
