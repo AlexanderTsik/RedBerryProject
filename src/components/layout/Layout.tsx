@@ -4,6 +4,7 @@ import Footer from './Footer'
 import LoginModal from '../modals/LoginModal'
 import RegisterModal from '../modals/RegisterModal'
 import ProfileModal from '../modals/ProfileModal'
+import EnrolledCoursesSidebar from '../sidebar/EnrolledCoursesSidebar'
 
 export default function Layout() {
   return (
@@ -16,6 +17,7 @@ export default function Layout() {
       <LoginModal />
       <RegisterModal />
       <ProfileModal />
+      <EnrolledCoursesSidebar />
     </div>
   )
 }
