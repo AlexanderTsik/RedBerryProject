@@ -7,19 +7,21 @@ export default function DashboardPage() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <div className="layout-frame flex flex-col gap-[64px] py-[64px]">
-      <HeroSlider />
-      {isAuthenticated ? (
-        <>
-          <ContinueLearning />
-          <FeaturedCourses />
-        </>
-      ) : (
-        <>
-          <FeaturedCourses />
-          <ContinueLearning />
-        </>
-      )}
+    <div className="min-h-screen bg-grey-100">
+      <div className="layout-frame flex flex-col gap-[64px] py-[64px]">
+        <HeroSlider />
+        {isAuthenticated ? (
+          <>
+            <ContinueLearning />
+            <FeaturedCourses />
+          </>
+        ) : (
+          <>
+            <FeaturedCourses />
+            <ContinueLearning />
+          </>
+        )}
+      </div>
     </div>
   )
 }

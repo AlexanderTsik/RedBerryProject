@@ -9,6 +9,10 @@
     box-sizing: border-box;
   }
 
+  html {
+    @apply scrollbar-hide;
+  }
+
   html,
   body,
   #root {
@@ -16,7 +20,7 @@
   }
 
   body {
-    @apply overflow-x-hidden bg-grey-100 font-sans text-grey-900 antialiased;
+    @apply overflow-x-hidden bg-grey-100 font-sans text-grey-900 antialiased scrollbar-hide;
   }
 }
 

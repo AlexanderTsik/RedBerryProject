@@ -7,9 +7,9 @@ import SocialTwitter from '../../assets/icons/footer/social-twitter.svg?react'
 import SocialInstagram from '../../assets/icons/footer/social-instagram.svg?react'
 import SocialLinkedIn from '../../assets/icons/footer/social-linkedin.svg?react'
 import SocialYouTube from '../../assets/icons/footer/social-youtube.svg?react'
-import IconMail from '../../assets/icons/footer/icon-mail.svg?react'
-import IconPhone from '../../assets/icons/footer/icon-phone.svg?react'
-import IconMapPin from '../../assets/icons/footer/icon-map-pin.svg?react'
+import IconMail from '../../assets/icons/icon-set/icon-mail.svg?react'
+import IconPhone from '../../assets/icons/icon-set/icon-phone.svg?react'
+import IconMapPin from '../../assets/icons/icon-set/icon-map-pin.svg?react'
 
 const linkClass =
   'text-left text-[18px] font-normal leading-[1.21] text-grey-500 transition-colors hover:text-primary'
@@ -20,6 +20,11 @@ export default function Footer() {
 
   return (
     <footer className="w-full shrink-0 border-t border-grey-200 bg-grey-100">
+      {/* Top Divider */}
+      <div className="flex items-center justify-center px-[177px]">
+        <div className="h-0 w-[1566px] border-t border-grey-200"></div>
+      </div>
+
       <div className="layout-frame pb-5 pt-20">
         <div className="flex w-full flex-col gap-[74px]">
           <div className="flex flex-col justify-between gap-14 lg:flex-row lg:gap-8 xl:gap-[219px]">
@@ -128,12 +133,19 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-8">
             <p className="text-[18px] font-normal leading-[1.21] text-grey-500">
               Copyright © 2026 Redberry International
             </p>
             <p className="text-[18px] font-normal leading-[1.21] text-grey-500 sm:text-right">
-              All Rights Reserved | Terms and Conditions | Privacy Policy
+              All Rights Reserved |{' '}
+              <a href="#" className="text-primary transition-colors hover:text-primary-800">
+                Terms and Conditions
+              </a>{' '}
+              |{' '}
+              <a href="#" className="text-primary transition-colors hover:text-primary-800">
+                Privacy Policy
+              </a>
             </p>
           </div>
         </div>
