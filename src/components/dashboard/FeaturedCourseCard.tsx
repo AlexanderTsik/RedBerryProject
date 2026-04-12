@@ -15,7 +15,7 @@ export default function FeaturedCourseCard({ course }: Props) {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="flex flex-col gap-[24px] items-start bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] flex-1 min-w-0 no-underline transition-all duration-200 hover:border-primary-200 hover:shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:border-primary-300 active:border-[1px] active:shadow-[0px_0px_35px_rgba(138,130,212,0.25)]"
+      className="flex h-full flex-col gap-[24px] items-start bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] flex-1 min-w-0 no-underline transition-all duration-200 hover:border-primary-200 hover:shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:border-primary-300 active:border-[1px] active:shadow-[0px_0px_35px_rgba(138,130,212,0.25)]"
     >
       {/* Image */}
       <div className="flex flex-col gap-[16px] items-start w-full">
@@ -50,19 +50,19 @@ export default function FeaturedCourseCard({ course }: Props) {
           </div>
 
           {/* Title */}
-          <p className="text-[24px] font-semibold leading-normal text-grey-900 w-full">
+          <p className="min-h-[58px] w-full text-[24px] font-semibold leading-normal text-grey-900">
             {course.title}
           </p>
         </div>
 
         {/* Description */}
-        <p className="text-[16px] font-medium leading-[24px] text-grey-500 w-full">
+        <p className="h-[96px] w-full overflow-hidden text-[16px] font-medium leading-[24px] text-grey-500">
           {course.description}
         </p>
       </div>
 
-      {/* Bottom: price + button */}
-      <div className="flex items-center justify-between w-full">
+      {/* Bottom: price + button (always pinned to card bottom) */}
+      <div className="mt-auto flex w-full items-center justify-between">
         <div className="flex gap-[8px] items-center whitespace-nowrap">
           <span className="text-[12px] font-medium text-grey-400 leading-normal">
             Starting from
