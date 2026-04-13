@@ -15,7 +15,6 @@ const MOCK_CARDS = [
   { id: 3, lecturer: 'Marilyn Mango', rating: 4.9, title: 'Advanced React & TypeScript Development', progress: 65, fill: 60 },
 ]
 
-// Matches the Figma template (node 1085-5557) exactly, with blur applied
 function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_CARDS[0]) {
   return (
     <div

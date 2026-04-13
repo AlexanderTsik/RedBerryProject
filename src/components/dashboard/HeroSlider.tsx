@@ -125,12 +125,6 @@ export default function HeroSlider() {
       </div>
 
       {/* ── Bottom navigation: dots + arrows ────────────────────────────────── */}
-      {/*
-        Figma layout (within the 1566px container):
-          left-[48px] right-[48px] top-[311px]
-          [132px empty spacer] | [dots flex-1 centered] | [arrows 132px]
-        Dots are vertically centred within the 54px arrow height → align-items:center
-      */}
       <div
         className="absolute left-[48px] right-[48px] flex items-center"
         style={{ top: '311px' }}
