@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useModal } from '../../hooks/useModal'
-import { secondaryActionBaseClass, secondaryActionSoftHoverClass } from '../ui/buttonStyles'
+import { primaryButtonClass, secondaryButtonClass } from '../ui/buttonStyles'
 import logo from '../../assets/icons/logo.svg'
 import avatarDefault from '../../assets/icons/nav-icons/avatar-default.svg'
 import NavSparkleIcon from '../../assets/icons/nav-icons/nav-sparkle.svg?react'
@@ -78,14 +78,14 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => openModal('login')}
-                className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} box-border h-[60px] w-[114px] rounded-lg bg-transparent text-[20px] font-medium leading-[20px]`}
+                className={`${secondaryButtonClass} box-border h-[60px] w-[114px] rounded-lg bg-transparent text-[20px] font-medium leading-[20px]`}
               >
                 Log In
               </button>
               <button
                 type="button"
                 onClick={() => openModal('register')}
-                className="box-border flex h-[60px] cursor-pointer items-center justify-center rounded-lg border-0 bg-primary px-[25px] py-[17px] text-[20px] font-medium leading-[20px] text-white transition-colors hover:bg-primary-600"
+                className={`${primaryButtonClass} h-[60px] rounded-lg text-[20px] font-medium leading-[20px]`}
               >
                 Sign Up
               </button>

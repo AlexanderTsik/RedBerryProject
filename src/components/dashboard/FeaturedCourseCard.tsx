@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import type { Course } from '../../types'
-import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
+import { primaryButtonClass } from '../ui/buttonStyles'
 import { formatPrice } from '../../utils/formatPrice'
+import RatingBadge from '../ui/RatingBadge'
+import InstructorMeta from '../ui/InstructorMeta'
 
 interface Props {
   course: Course
@@ -31,18 +33,8 @@ export default function FeaturedCourseCard({ course }: Props) {
         <div className="flex flex-col gap-[12px] items-start w-full">
           {/* Lecturer + rating */}
           <div className="flex flex-wrap items-center justify-between w-full gap-y-[8px]">
-            <p className="text-[14px] font-medium leading-normal text-grey-400 whitespace-nowrap">
-              Lecturer{' '}
-              <span className="text-grey-500">{course.instructor.name}</span>
-            </p>
-            {course.avgRating != null && (
-              <div className="flex items-center gap-[4px]">
-                <IconStarFill className="size-[18px] shrink-0" aria-hidden />
-                <span className="text-[14px] font-medium text-grey-600 leading-normal whitespace-nowrap">
-                  {course.avgRating.toFixed(1)}
-                </span>
-              </div>
-            )}
+            <InstructorMeta name={course.instructor.name} prefix="Lecturer" />
+            <RatingBadge rating={course.avgRating} />
           </div>
 
           {/* Title */}
@@ -68,8 +60,8 @@ export default function FeaturedCourseCard({ course }: Props) {
           </span>
         </div>
 
-        <div className="flex items-center justify-center gap-[10px] bg-primary rounded-[8px] px-[25px] py-[17px] shrink-0">
-          <span className="text-[20px] font-medium text-white leading-normal whitespace-nowrap">
+        <div className={`${primaryButtonClass} shrink-0 text-[20px] font-medium leading-normal`}>
+          <span className="whitespace-nowrap">
             Details
           </span>
         </div>

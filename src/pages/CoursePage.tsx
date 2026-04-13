@@ -7,7 +7,10 @@ import { createEnrollment, completeEnrollment, deleteEnrollment } from '../api/e
 import { submitReview } from '../api/reviews'
 import { useAuth } from '../store/AuthContext'
 import { useModal } from '../hooks/useModal'
-import { secondaryActionBaseClass, secondaryActionSoftHoverClass } from '../components/ui/buttonStyles'
+import { primaryButtonClass, secondaryButtonClass } from '../components/ui/buttonStyles'
+import ProgressBar from '../components/ui/ProgressBar'
+import RatingBadge from '../components/ui/RatingBadge'
+import { formatTime, formatTimeSlotWithHours } from '../utils/formatTimeSlot'
 import { formatPrice } from '../utils/formatPrice'
 import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../utils/formatSchedule'
 import type { WeeklySchedule, TimeSlot, SessionType, ScheduleConflict } from '../types'
@@ -158,10 +161,6 @@ function formatCompactMeridiemTime(time: string): string {
   return time.replace(/:00\s*/i, '').replace(/\s+/g, '')
 }
 
-function stripTimeSlotParenthesis(label: string): string {
-  return label.replace(/\s*\(.*\)/, '')
-}
-
 function formatConflictScheduleLabel(schedule: string): string {
   const [daysPart, timePart] = schedule.split(/\s+at\s+/i)
 
@@ -187,14 +186,6 @@ function WarningIcon({ className }: { className?: string }) {
 // ─── Arrow right icon ───────────────────────────────────────────────────────
 function ArrowRightIcon() {
   return <CourseArrowRight className="size-[16px] shrink-0" aria-hidden />
-}
-
-// ─── Format 24h time to 12h (e.g. "09:00:00" → "9:00 AM") ─────────────
-function formatTime(time: string): string {
-  const [hh, mm] = time.split(':').map(Number)
-  const suffix = hh >= 12 ? 'PM' : 'AM'
-  const h12 = hh % 12 || 12
-  return `${h12}:${String(mm).padStart(2, '0')} ${suffix}`
 }
 
 // ─── Modal base overlay ──────────────────────────────────────────────────────
@@ -666,14 +657,11 @@ export default function CoursePage() {
                   </div>
                 </div>
                 <div className="flex gap-[4px] items-center">
-                  {avgRating != null && (
-                    <div className="flex items-center gap-[4px]">
-                      <IconStarFill className="size-[26px] shrink-0" />
-                      <span className="text-[14px] font-medium leading-[1.5] text-grey-600 whitespace-nowrap">
-                        {avgRating.toFixed(1)}
-                      </span>
-                    </div>
-                  )}
+                  <RatingBadge
+                    rating={avgRating}
+                    iconClassName="size-[26px] shrink-0"
+                    textClassName="text-[14px] font-medium leading-[1.5] text-grey-600 whitespace-nowrap"
+                  />
                 </div>
               </div>
               {/* Category chip */}
@@ -883,6 +871,9 @@ export default function CoursePage() {
                           const sessionTypeKey = normalizeSessionTypeKey(st.name)
                           const TypeIcon = sessionTypeKey ? SESSION_TYPE_ICON[sessionTypeKey] : IconDesktop
                           const displayName = formatSessionTypeLabel(st.name)
+                          const sessionHoursLabel = selectedTimeSlot
+                            ? `${formatTime(selectedTimeSlot.startTime)} – ${formatTime(selectedTimeSlot.endTime)}`
+                            : null
 
                           return (
                             <div key={st.name} className="flex flex-col items-center gap-[8px] flex-1 min-w-0">
@@ -912,6 +903,17 @@ export default function CoursePage() {
                                 }`}>
                                   {displayName}
                                 </span>
+                                {sessionHoursLabel && (
+                                  <span className={`text-[12px] font-medium leading-[12px] ${
+                                    isDisabled
+                                      ? 'text-grey-300'
+                                      : isSelected
+                                        ? 'text-primary-600'
+                                        : 'text-grey-400 group-hover:text-primary-600'
+                                  }`}>
+                                    {sessionHoursLabel}
+                                  </span>
+                                )}
                                 {normalizeSessionTypeKey(st.name) === 'online' ? (
                                   <div className="flex items-center justify-center gap-[2px] w-full">
                                     <span className={`text-[12px] font-normal leading-[12px] ${isDisabled ? 'text-grey-300' : 'text-grey-600'}`}>
@@ -1120,7 +1122,7 @@ export default function CoursePage() {
                       <div className="flex items-center gap-[12px]">
                         <IconClock className="size-[24px] shrink-0" />
                         <span className="text-[20px] font-medium leading-[20px] text-grey-600">
-                          {stripTimeSlotParenthesis(enrollment.schedule.timeSlot.label)}
+                          {formatTimeSlotWithHours(enrollment.schedule.timeSlot)}
                         </span>
                       </div>
                     )}
@@ -1158,12 +1160,7 @@ export default function CoursePage() {
                       {enrollment.progress}% Complete
                     </span>
                   </div>
-                  <div className="relative w-full h-[24px] rounded-[30px] bg-primary-100">
-                    <div
-                      className="absolute inset-y-0 left-0 rounded-[30px] bg-primary transition-all duration-300"
-                      style={{ width: `${Math.min(100, Math.max(0, enrollment.progress))}%` }}
-                    />
-                  </div>
+                  <ProgressBar progress={enrollment.progress} height="h-[24px]" animated />
                 </div>
 
                 {/* Not completed: Complete Course button */}
@@ -1172,9 +1169,9 @@ export default function CoursePage() {
                     type="button"
                     onClick={() => completeMutation.mutate(enrollment.id)}
                     disabled={completeMutation.isPending}
-                    className="flex items-center justify-center gap-[10px] w-full rounded-[8px] px-[25px] py-[17px] border-0 bg-primary cursor-pointer hover:bg-primary-600 transition-colors"
+                    className={`${primaryButtonClass} w-full`}
                   >
-                    <span className="text-[20px] font-medium leading-[20px] text-white">
+                    <span className="text-[20px] font-medium leading-[20px]">
                       {completeMutation.isPending ? 'Completing...' : 'Complete Course'}
                     </span>
                     {!completeMutation.isPending && (
@@ -1193,9 +1190,9 @@ export default function CoursePage() {
                     type="button"
                     onClick={() => retakeMutation.mutate(enrollment.id)}
                     disabled={retakeMutation.isPending}
-                    className="flex items-center justify-center gap-[10px] w-full rounded-[8px] px-[25px] py-[17px] border-0 bg-primary cursor-pointer hover:bg-primary-600 transition-colors"
+                    className={`${primaryButtonClass} w-full`}
                   >
-                    <span className="text-[20px] font-medium leading-[20px] text-white">
+                    <span className="text-[20px] font-medium leading-[20px]">
                       {retakeMutation.isPending ? 'Retaking...' : 'Retake Course'}
                     </span>
                     <IconRetake className="size-[24px] shrink-0 [&_path]:fill-white" />
@@ -1277,9 +1274,9 @@ export default function CoursePage() {
           <button
             type="button"
             onClick={() => setShowCompletedModal(false)}
-            className="flex items-center justify-center w-full bg-primary rounded-[8px] px-[25px] py-[17px] border-0 cursor-pointer hover:bg-primary-600 transition-colors"
+            className={`${primaryButtonClass} w-full`}
           >
-            <span className="text-[16px] font-medium leading-[24px] text-white">Done</span>
+            Done
           </button>
         </ModalBase>
       )}
@@ -1303,9 +1300,9 @@ export default function CoursePage() {
           <button
             type="button"
             onClick={() => setShowEnrolledModal(false)}
-            className="flex items-center justify-center w-full bg-primary rounded-[8px] px-[25px] py-[17px] border-0 cursor-pointer hover:bg-primary-600 transition-colors"
+            className={`${primaryButtonClass} w-full`}
           >
-            <span className="text-[16px] font-medium leading-[24px] text-white">Done</span>
+            Done
           </button>
         </ModalBase>
       )}
@@ -1334,16 +1331,16 @@ export default function CoursePage() {
             <button
               type="button"
               onClick={() => { setConflicts(null); handleEnroll(true) }}
-              className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} flex-1`}
+              className={`${secondaryButtonClass} flex-1`}
             >
               <span className="text-[16px] font-medium leading-[24px] text-primary">Continue Anyway</span>
             </button>
             <button
               type="button"
               onClick={() => setConflicts(null)}
-              className="flex flex-1 items-center justify-center rounded-[8px] bg-primary border-0 px-[25px] py-[17px] cursor-pointer hover:bg-primary-600 transition-colors"
+              className={`${primaryButtonClass} flex-1`}
             >
-              <span className="text-[16px] font-medium leading-[24px] text-white">Cancel</span>
+              Cancel
             </button>
           </div>
         </ModalBase>
@@ -1367,16 +1364,16 @@ export default function CoursePage() {
             <button
               type="button"
               onClick={() => { setShowProfileModal(false); openModal('profile') }}
-              className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} flex-1`}
+              className={`${secondaryButtonClass} flex-1`}
             >
               <span className="text-[16px] font-medium leading-[24px] text-primary">Complete Profile</span>
             </button>
             <button
               type="button"
               onClick={() => setShowProfileModal(false)}
-              className="flex flex-1 items-center justify-center rounded-[8px] bg-primary border-0 px-[25px] py-[17px] cursor-pointer hover:bg-primary-600 transition-colors"
+              className={`${primaryButtonClass} flex-1`}
             >
-              <span className="text-[16px] font-medium leading-[24px] text-white">Cancel</span>
+              Cancel
             </button>
           </div>
         </ModalBase>

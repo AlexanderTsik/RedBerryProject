@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import type { Course } from '../../types'
-import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
 import { formatPrice } from '../../utils/formatPrice'
+import { primaryButtonClass } from '../ui/buttonStyles'
+import RatingBadge from '../ui/RatingBadge'
+import InstructorMeta from '../ui/InstructorMeta'
 
 // Map category name → icon-set SVG (loaded eagerly so vite can tree-shake)
 import IconDevelopment from '../../assets/icons/icon-set/icon-development.svg?react'
@@ -52,23 +54,16 @@ export default function CatalogCourseCard({ course }: Props) {
             <div className="flex flex-col gap-[12px] items-start w-full">
               {/* Meta: instructor | weeks | star rating */}
               <div className="flex flex-wrap gap-y-[8px] items-center justify-between w-full">
-                <div className="flex gap-[8px] items-center">
-                  <p className="text-[14px] font-medium leading-[14px] text-grey-300 whitespace-nowrap">
-                    {course.instructor.name}
-                  </p>
-                  <div className="w-[2px] h-[14px] bg-grey-200 rounded-[100px] shrink-0" />
-                  <p className="text-[14px] font-medium leading-[14px] text-grey-300 whitespace-nowrap">
-                    {course.durationWeeks} Weeks
-                  </p>
-                </div>
-                {course.avgRating != null && (
-                  <div className="flex items-center gap-[4px] shrink-0">
-                    <IconStarFill className="size-[18px]" aria-hidden />
-                    <span className="text-[14px] font-medium text-grey-600 leading-[14px] whitespace-nowrap">
-                      {course.avgRating.toFixed(1)}
-                    </span>
-                  </div>
-                )}
+                <InstructorMeta
+                  name={course.instructor.name}
+                  secondaryText={`${course.durationWeeks} Weeks`}
+                  className="gap-[8px]"
+                />
+                <RatingBadge
+                  rating={course.avgRating}
+                  className="shrink-0"
+                  textClassName="text-[14px] font-medium text-grey-600 leading-[14px] whitespace-nowrap"
+                />
               </div>
 
               {/* Title */}
@@ -99,10 +94,8 @@ export default function CatalogCourseCard({ course }: Props) {
               {formatPrice(course.basePrice)}
             </span>
           </div>
-          <div className="flex items-center justify-center bg-primary rounded-[8px] px-[25px] py-[17px] h-full shrink-0">
-            <span className="text-[16px] font-medium leading-[24px] text-white whitespace-nowrap text-center">
-              Details
-            </span>
+          <div className={`${primaryButtonClass} h-full shrink-0 text-[16px] font-medium`}>
+            Details
           </div>
         </div>
       </div>
