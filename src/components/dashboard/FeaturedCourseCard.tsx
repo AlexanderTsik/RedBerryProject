@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom'
 import type { Course } from '../../types'
 import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
+import { formatPrice } from '../../utils/formatPrice'
 
 interface Props {
   course: Course
-}
-
-function formatPrice(price: string | number): string {
-  const n = typeof price === 'string' ? parseFloat(price) : price
-  return `$${Math.floor(n).toLocaleString('en-US')}`
 }
 
 export default function FeaturedCourseCard({ course }: Props) {

@@ -6,6 +6,7 @@ import ProgressCourseCard from './ProgressCourseCard'
 import IconLock from '../../assets/icons/icon-set/icon-lock.svg?react'
 import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
 import mockThumbnail from '../../assets/images/mock-progress-thumbnail.jpg'
+import { secondaryActionBaseClass, secondaryActionSoftHoverClass } from '../ui/buttonStyles'
 
 // ─── Mock data for blurred placeholder cards ──────────────────────────────────
 
@@ -73,7 +74,7 @@ function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_C
         </div>
 
         {/* View button */}
-        <div className="flex items-center justify-center gap-[2px] border-2 border-primary-300 rounded-[8px] px-[16px] py-[12px] w-[90px] shrink-0">
+        <div className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} w-[90px] shrink-0 gap-[2px]`}>
           <span className="text-[16px] font-medium leading-[24px] text-primary text-center whitespace-nowrap">
             View
           </span>

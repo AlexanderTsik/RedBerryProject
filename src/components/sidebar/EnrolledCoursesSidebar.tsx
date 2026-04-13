@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useModal } from '../../hooks/useModal'
 import { useAuth } from '../../store/AuthContext'
 import { getEnrollments } from '../../api/enrollments'
 import { getCourseById } from '../../api/courses'
+import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../../utils/formatSchedule'
+import { secondaryActionBaseClass, secondaryActionPurpleInteractiveClass } from '../ui/buttonStyles'
 import type { Enrollment } from '../../types'
 import IconMapPin from '../../assets/icons/icon-set/icon-map-pin.svg?react'
 import IconCalendar from '../../assets/icons/icon-set/icon-calendar.svg?react'
@@ -15,13 +17,10 @@ import IconIntersect from '../../assets/icons/icon-set/icon-intersect.svg?react'
 import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
 import packageOpenIcon from '../../assets/Icons/icon-set/icon-package-open.svg'
 
-const SESSION_TYPE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+const SESSION_TYPE_ICON: Record<SessionTypeKey, React.ComponentType<{ className?: string }>> = {
   online: IconDesktop,
-  Online: IconDesktop,
   in_person: IconUsers,
-  'In-Person': IconUsers,
   hybrid: IconIntersect,
-  Hybrid: IconIntersect,
 }
 
 function toNumberOrNull(value: unknown): number | null {
@@ -64,13 +63,6 @@ function extractCourseRating(course: unknown): number | null {
   return null
 }
 
-function formatSessionTypeName(name: string): string {
-  return name
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .replace('In Person', 'In Person')
-}
-
 function SidebarCourseCard({
   enrollment,
   rating,
@@ -81,15 +73,56 @@ function SidebarCourseCard({
   const { course, progress, schedule } = enrollment
   const navigate = useNavigate()
   const { closeSidebar } = useModal()
+  const [isHovered, setIsHovered] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
 
   const stName = schedule?.sessionType?.name ?? ''
-  const StIcon = SESSION_TYPE_ICON[stName] || IconDesktop
-  const displaySessionType = formatSessionTypeName(stName)
-  const isOnline = stName.toLowerCase() === 'online'
+  const sessionTypeKey = normalizeSessionTypeKey(stName)
+  const StIcon = sessionTypeKey ? SESSION_TYPE_ICON[sessionTypeKey] : IconDesktop
+  const displaySessionType = formatSessionTypeLabel(stName)
+  const isOnline = sessionTypeKey === 'online'
   const location = schedule?.location ?? (isOnline ? 'Google Meet' : null)
 
+  const handleCardClick = () => {
+    closeSidebar()
+    navigate(`/courses/${course.id}`)
+  }
+
+  const handleMouseDown = () => {
+    setIsPressed(true)
+  }
+
+  const handleMouseUp = () => {
+    setIsPressed(false)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+    setIsPressed(false)
+  }
+
   return (
-    <div className="w-full rounded-[12px] bg-white p-[20px]">
+    <div
+      onClick={handleCardClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      className={`w-full rounded-[12px] bg-white p-[20px] cursor-pointer transition-all ${
+        isPressed
+          ? 'border border-[#8A7ECC]'
+          : isHovered
+            ? 'border border-[#B7B3F4]'
+            : 'border border-white'
+      }`}
+      style={
+        isPressed
+          ? { boxShadow: '0 0 40px 0 rgba(138, 130, 212, 0.35)' }
+          : isHovered
+            ? { boxShadow: '0 0 10px 0 rgba(138, 130, 212, 0.25)' }
+            : {}
+      }
+    >
       <div className="flex w-full items-center gap-[18px]">
         <div className="h-[191px] w-[269px] shrink-0 overflow-hidden rounded-[10px] bg-primary-50">
           {course.image ? (
@@ -171,11 +204,12 @@ function SidebarCourseCard({
 
         <button
           type="button"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
             closeSidebar()
             navigate(`/courses/${course.id}`)
           }}
-          className="w-[117px] shrink-0 rounded-[8px] border-2 border-[#958FEF] px-[16px] py-[12px] text-center text-[16px] font-medium leading-[24px] text-primary transition-colors hover:bg-grey-100"
+          className={`${secondaryActionBaseClass} ${secondaryActionPurpleInteractiveClass} w-[117px] shrink-0 text-center text-[16px] font-medium leading-[24px]`}
         >
           View
         </button>
@@ -278,7 +312,7 @@ export default function EnrolledCoursesSidebar() {
         aria-label="Enrolled Courses"
         className="fixed right-0 top-0 z-50 flex h-full w-[770px] max-w-[100vw] flex-col bg-grey-100 shadow-[-8px_0_40px_rgba(0,0,0,0.12)]"
       >
-        <div className="flex h-[86px] shrink-0 items-end justify-between px-[74px] pb-[16px]">
+        <div className="flex h-[86px] w-[794px] shrink-0 items-end justify-center gap-[202px] bg-[#f5f5f5]">
           <h2 className="text-[40px] font-semibold leading-[44px] tracking-[-0.2px] text-grey-950">
             Enrolled Courses
           </h2>
@@ -288,7 +322,7 @@ export default function EnrolledCoursesSidebar() {
           </p>
         </div>
 
-        <div className="flex flex-1 flex-col gap-[12px] overflow-y-auto px-[74px] pb-[24px] pt-[37px]">
+        <div className="inline-flex flex-col items-start gap-[12px] overflow-y-auto px-[74px] pb-[24px] pt-[37px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {isLoading ? (
             <div className="flex flex-col gap-[12px]">
               {[1, 2, 3].map((i) => (
