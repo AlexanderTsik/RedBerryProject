@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import type { Enrollment } from '../../types'
-import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
-import { secondaryActionBaseClass, secondaryActionPurpleInteractiveClass } from '../ui/buttonStyles'
+import { secondaryButtonClass } from '../ui/buttonStyles'
+import ProgressBar from '../ui/ProgressBar'
+import RatingBadge from '../ui/RatingBadge'
+import InstructorMeta from '../ui/InstructorMeta'
 
 interface Props {
   enrollment: Enrollment
@@ -35,31 +37,12 @@ export default function ProgressCourseCard({ enrollment }: Props) {
           <div className="flex flex-1 flex-col gap-[9px] h-full items-start min-w-0 pl-[16px] pr-[4px]">
             {/* Lecturer + rating */}
             <div className="flex flex-wrap items-center justify-between w-full gap-y-[8px]">
-              {/* Instructor avatar + name */}
-              <div className="flex items-center gap-[6px] min-w-0">
-                {course.instructor.avatar ? (
-                  <img
-                    src={course.instructor.avatar}
-                    alt={course.instructor.name}
-                    className="h-[24px] w-[24px] rounded-full object-cover shrink-0"
-                  />
-                ) : (
-                  <div className="h-[24px] w-[24px] rounded-full bg-primary-100 shrink-0" />
-                )}
-                <p className="text-[14px] font-medium text-grey-400 whitespace-nowrap leading-normal">
-                  Lecturer{' '}
-                  <span className="text-grey-500">{course.instructor.name}</span>
-                </p>
-              </div>
-              {/* Rating — only shown when available */}
-              {course.avgRating != null && (
-                <div className="flex items-center gap-[4px]">
-                  <IconStarFill className="size-[18px] shrink-0" aria-hidden />
-                  <span className="text-[14px] font-medium text-grey-600 leading-normal whitespace-nowrap">
-                    {course.avgRating.toFixed(1)}
-                  </span>
-                </div>
-              )}
+              <InstructorMeta
+                name={course.instructor.name}
+                prefix="Lecturer"
+                avatarSrc={course.instructor.avatar ?? null}
+              />
+              <RatingBadge rating={course.avgRating} />
             </div>
 
             {/* Title */}
@@ -78,16 +61,11 @@ export default function ProgressCourseCard({ enrollment }: Props) {
             {progress}% Complete
           </p>
           {/* Track */}
-          <div className="relative w-full h-[15px] rounded-[30px] bg-primary-100">
-            <div
-              className="absolute inset-y-0 left-0 rounded-[30px] bg-primary"
-              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-            />
-          </div>
+          <ProgressBar progress={progress} />
         </div>
 
         {/* View button */}
-        <div className={`${secondaryActionBaseClass} ${secondaryActionPurpleInteractiveClass} w-[90px] shrink-0 gap-[2px]`}>
+        <div className={`${secondaryButtonClass} w-[90px] shrink-0 gap-[2px]`}>
           <span className="text-[16px] font-medium leading-[24px] text-current">
             View
           </span>

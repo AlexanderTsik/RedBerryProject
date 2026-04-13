@@ -6,7 +6,9 @@ import { useAuth } from '../../store/AuthContext'
 import { getEnrollments } from '../../api/enrollments'
 import { getCourseById } from '../../api/courses'
 import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../../utils/formatSchedule'
-import { secondaryActionBaseClass, secondaryActionPurpleInteractiveClass } from '../ui/buttonStyles'
+import { formatTimeSlotWithHours } from '../../utils/formatTimeSlot'
+import { secondaryButtonClass } from '../ui/buttonStyles'
+import ProgressBar from '../ui/ProgressBar'
 import type { Enrollment } from '../../types'
 import IconMapPin from '../../assets/icons/icon-set/icon-map-pin.svg?react'
 import IconCalendar from '../../assets/icons/icon-set/icon-calendar.svg?react'
@@ -165,7 +167,7 @@ function SidebarCourseCard({
               <div className="flex items-center gap-[8px]">
                 <IconClock className="size-[16px] shrink-0" />
                 <p className="whitespace-nowrap text-[14px] font-normal leading-[26px] text-grey-500">
-                  {schedule.timeSlot.label}
+                  {formatTimeSlotWithHours(schedule.timeSlot)}
                 </p>
               </div>
             )}
@@ -194,12 +196,7 @@ function SidebarCourseCard({
           <div className="h-[16px] text-[16px] font-medium leading-[24px] text-grey-900">
             {progress}% Complete
           </div>
-          <div className="mt-[8px] h-[15px] w-full rounded-[30px] bg-[#DDDBFA]">
-            <div
-              className="h-[15px] rounded-[30px] bg-primary"
-              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-            />
-          </div>
+          <ProgressBar progress={progress} className="mt-[8px]" />
         </div>
 
         <button
@@ -209,7 +206,7 @@ function SidebarCourseCard({
             closeSidebar()
             navigate(`/courses/${course.id}`)
           }}
-          className={`${secondaryActionBaseClass} ${secondaryActionPurpleInteractiveClass} w-[117px] shrink-0 text-center text-[16px] font-medium leading-[24px]`}
+          className={`${secondaryButtonClass} w-[117px] shrink-0 text-center text-[16px] font-medium leading-[24px]`}
         >
           View
         </button>

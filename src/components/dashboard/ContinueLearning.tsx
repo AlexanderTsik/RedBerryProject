@@ -4,9 +4,11 @@ import { useModal } from '../../hooks/useModal'
 import { getCoursesInProgress } from '../../api/courses'
 import ProgressCourseCard from './ProgressCourseCard'
 import IconLock from '../../assets/icons/icon-set/icon-lock.svg?react'
-import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
 import mockThumbnail from '../../assets/images/mock-progress-thumbnail.jpg'
-import { secondaryActionBaseClass, secondaryActionSoftHoverClass } from '../ui/buttonStyles'
+import { ghostButtonClass, primaryButtonClass, secondaryButtonClass } from '../ui/buttonStyles'
+import ProgressBar from '../ui/ProgressBar'
+import RatingBadge from '../ui/RatingBadge'
+import InstructorMeta from '../ui/InstructorMeta'
 
 // ─── Mock data for blurred placeholder cards ──────────────────────────────────
 
@@ -38,16 +40,8 @@ function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_C
           <div className="flex flex-1 flex-col gap-[9px] h-full items-start min-w-0 pl-[16px] pr-[4px]">
             {/* Lecturer + rating */}
             <div className="flex flex-wrap items-center justify-between w-full gap-y-[8px]">
-              <p className="text-[14px] font-medium text-grey-400 whitespace-nowrap leading-normal">
-                Lecturer{' '}
-                <span className="text-grey-500">{lecturer}</span>
-              </p>
-              <div className="flex items-center gap-[4px]">
-                <IconStarFill className="size-[18px] shrink-0" aria-hidden />
-                <span className="text-[14px] font-medium text-grey-600 leading-normal whitespace-nowrap">
-                  {rating.toFixed(1)}
-                </span>
-              </div>
+              <InstructorMeta name={lecturer} prefix="Lecturer" />
+              <RatingBadge rating={rating} />
             </div>
             {/* Title */}
             <p className="text-[20px] font-semibold leading-[24px] text-grey-900 w-full">
@@ -65,17 +59,12 @@ function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_C
             {progress}% Complete
           </p>
           {/* Track */}
-          <div className="relative w-full h-[15px] rounded-[30px] bg-primary-100">
-            <div
-              className="absolute inset-y-0 left-0 rounded-[30px] bg-primary"
-              style={{ width: `${fill}%` }}
-            />
-          </div>
+          <ProgressBar progress={fill} />
         </div>
 
         {/* View button */}
-        <div className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} w-[90px] shrink-0 gap-[2px]`}>
-          <span className="text-[16px] font-medium leading-[24px] text-primary text-center whitespace-nowrap">
+        <div className={`${secondaryButtonClass} w-[90px] shrink-0 gap-[2px]`}>
+          <span className="text-[16px] font-medium leading-[24px] text-current text-center whitespace-nowrap">
             View
           </span>
         </div>
@@ -140,8 +129,8 @@ export default function ContinueLearning() {
                 </p>
               </div>
               {/* Log In CTA */}
-              <div className="flex items-center justify-center bg-primary rounded-[8px] px-[25px] py-[17px] h-[42px]">
-                <span className="text-[16px] font-medium leading-[24px] text-grey-100 whitespace-nowrap">
+              <div className={`${primaryButtonClass} h-[42px] text-[16px] font-medium leading-[24px]`}>
+                <span className="whitespace-nowrap">
                   Log In
                 </span>
               </div>
@@ -175,7 +164,7 @@ export default function ContinueLearning() {
         <button
           type="button"
           onClick={openSidebar}
-          className="text-[20px] font-medium leading-normal text-primary underline decoration-solid whitespace-nowrap shrink-0 bg-transparent border-0 cursor-pointer hover:text-primary-600 transition-colors"
+          className={`${ghostButtonClass} text-[20px] font-medium leading-normal whitespace-nowrap shrink-0`}
         >
           See All
         </button>

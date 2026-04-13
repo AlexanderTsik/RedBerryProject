@@ -5,6 +5,7 @@ import bg2 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage2.
 import bg3 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage3.png'
 import ArrowLeftIcon from '../../assets/Icons/hero-slider/arrow-left.svg?react'
 import ArrowRightIcon from '../../assets/Icons/hero-slider/arrow-right.svg?react'
+import { primaryButtonClass } from '../ui/buttonStyles'
 
 // ─── Slide data ──────────────────────────────────────────────────────────────
 
@@ -115,7 +116,7 @@ export default function HeroSlider() {
 
               <Link
                 to={slide.ctaTo}
-                className="flex h-[64px] items-center justify-center rounded-[8px] bg-primary px-[25px] py-[17px] text-[20px] font-medium text-white transition-colors hover:bg-primary-600"
+                className={`${primaryButtonClass} h-[64px] text-[20px] font-medium`}
               >
                 {slide.cta}
               </Link>
