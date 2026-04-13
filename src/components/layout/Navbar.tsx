@@ -9,7 +9,7 @@ import IncompleteIndicator from '../../assets/icons/nav-icons/incomplete-indicat
 import CompleteIndicator from '../../assets/icons/nav-icons/complete-indicator.svg?react'
 
 const navItemClass =
-  'flex items-center gap-2 rounded-lg p-[15px] text-[20px] font-medium leading-[1.21] text-grey-600 no-underline transition-colors duration-200 hover:text-primary'
+  'flex items-center gap-2 rounded-lg p-[15px] text-[20px] font-medium leading-[20px] text-grey-600 no-underline transition-colors duration-200 hover:text-primary'
 
 const navIconClass = 'h-[26px] w-[26px] shrink-0'
 
@@ -77,14 +77,14 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => openModal('login')}
-                className="box-border flex h-[60px] w-[114px] cursor-pointer items-center justify-center rounded-lg border-2 border-primary-300 bg-transparent text-[20px] font-medium leading-[1.21] text-primary transition-colors hover:bg-primary-50"
+                className="box-border flex h-[60px] w-[114px] cursor-pointer items-center justify-center rounded-lg border-2 border-primary-300 bg-transparent text-[20px] font-medium leading-[20px] text-primary transition-colors hover:bg-primary-50"
               >
                 Log In
               </button>
               <button
                 type="button"
                 onClick={() => openModal('register')}
-                className="box-border flex h-[60px] cursor-pointer items-center justify-center rounded-lg border-0 bg-primary px-[25px] py-[17px] text-[20px] font-medium leading-[1.21] text-white transition-colors hover:bg-primary-600"
+                className="box-border flex h-[60px] cursor-pointer items-center justify-center rounded-lg border-0 bg-primary px-[25px] py-[17px] text-[20px] font-medium leading-[20px] text-white transition-colors hover:bg-primary-600"
               >
                 Sign Up
               </button>

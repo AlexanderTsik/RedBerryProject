@@ -6,21 +6,8 @@ import type { CoursesParams } from '../api/courses'
 import FilterSidebar from '../components/catalog/FilterSidebar'
 import CatalogCourseCard from '../components/catalog/CatalogCourseCard'
 import Pagination from '../components/catalog/Pagination'
-/** Sort dropdown chevron arrow */
-function SortChevron({ className }: { className?: string }) {
-  return (
-    <svg width="13" height="8" viewBox="196 19 16 11" fill="none" className={className}>
-      <path
-        d="M210.445 22.0012L205.151 27.2952C205.029 27.4171 204.884 27.5138 204.725 27.5798C204.566 27.6457 204.395 27.6797 204.222 27.6797C204.05 27.6797 203.879 27.6457 203.72 27.5798C203.561 27.5138 203.416 27.4171 203.294 27.2952L198 22.001"
-        stroke="#666666"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
+import DropdownArrow from '../assets/Icons/icon-set/icon-arrow-dropdown.svg?react'
+import BreadcrumbArrow from '../assets/Icons/icon-set/icon-arrow-breadcrumb.svg?react'
 // Sort options
 const SORT_OPTIONS: { value: CoursesParams['sort']; label: string }[] = [
   { value: 'newest', label: 'Newest First' },
@@ -30,17 +17,6 @@ const SORT_OPTIONS: { value: CoursesParams['sort']; label: string }[] = [
   { value: 'title_asc', label: 'Title: A-Z' },
 ]
 
-/** Breadcrumb arrow separator (chevron right) */
-function BreadcrumbArrow() {
-  return (
-    <svg width="12" height="24" viewBox="61 0 12 28" fill="none" className="shrink-0">
-      <path
-        d="M61.452 8.58023L62.513 7.52024L68.292 13.2972C68.3851 13.3898 68.4591 13.4999 68.5095 13.6211C68.56 13.7424 68.5859 13.8724 68.5859 14.0037C68.5859 14.1351 68.56 14.2651 68.5095 14.3863C68.4591 14.5076 68.3851 14.6177 68.292 14.7102L62.513 20.4902L61.453 19.4302L66.877 14.0052L61.452 8.58023Z"
-        fill="#666666"
-      />
-    </svg>
-  )
-}
 
 export default function CatalogPage() {
   // ── Filter state ──────────────────────────────────────────────────────────
@@ -107,17 +83,20 @@ export default function CatalogPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="layout-frame flex flex-col gap-[32px] py-[40px]">
+    <div className="min-h-screen bg-grey-100">
+    <div className="layout-frame flex flex-col gap-[32px] pt-[72px] pb-[40px]">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-[2px]">
-        <div className="flex items-center gap-[4px] px-[4px] py-[2px]">
-          <Link to="/" className="text-[18px] font-medium leading-normal text-grey-500 no-underline hover:text-primary transition-colors whitespace-nowrap">
+        <div className="flex shrink-0 items-center gap-[4px] px-[4px] py-[2px]">
+          <Link to="/" className="text-[18px] font-medium leading-[18px] text-grey-500 no-underline whitespace-nowrap">
             Home
           </Link>
-          <BreadcrumbArrow />
+          <span className="flex h-[24px] w-[12px] shrink-0 items-center justify-center">
+            <BreadcrumbArrow className="h-[13px] w-[8px] shrink-0" />
+          </span>
         </div>
-        <div className="flex items-center gap-[4px] px-[4px] py-[2px]">
-          <span className="text-[18px] font-medium leading-normal text-primary-400 whitespace-nowrap">
+        <div className="flex shrink-0 items-center gap-[4px] px-[4px] py-[2px]">
+          <span className="text-[18px] font-medium leading-[18px] text-primary-400 whitespace-nowrap">
             Browse
           </span>
         </div>
@@ -126,7 +105,7 @@ export default function CatalogPage() {
       {/* Main layout */}
       <div className="flex gap-[48px] items-start">
         {/* Sidebar */}
-        <div className="w-[270px] shrink-0 self-start sticky top-[24px]">
+        <div className="w-[351px] shrink-0 self-start sticky top-[24px]">
           <FilterSidebar
             selectedCategories={selectedCategories}
             selectedTopics={selectedTopics}
@@ -159,7 +138,7 @@ export default function CatalogPage() {
                   <span className="text-grey-500">Sort By:</span>
                   <span className="text-primary">{currentSortLabel}</span>
                 </span>
-                <SortChevron
+                <DropdownArrow
                   className={`shrink-0 transition-transform ${sortOpen ? 'rotate-180' : ''}`}
                 />
               </button>
@@ -172,7 +151,7 @@ export default function CatalogPage() {
                     onClick={() => setSortOpen(false)}
                   />
                   {/* Dropdown menu */}
-                  <div className="absolute right-0 top-[calc(100%+4px)] z-20 w-[220px] rounded-[10px] border border-grey-100 bg-white py-[4px] shadow-[0px_4px_12px_rgba(0,0,0,0.08)]">
+                  <div className="absolute right-0 top-[calc(100%+4px)] z-20 w-[234px] rounded-[10px] border border-grey-100 bg-white shadow-[0px_4px_12px_rgba(0,0,0,0.08)]">
                     {SORT_OPTIONS.map(option => (
                       <button
                         key={option.value}
@@ -181,11 +160,7 @@ export default function CatalogPage() {
                           setSort(option.value)
                           setSortOpen(false)
                         }}
-                        className={`flex w-full items-center px-[20px] py-[10px] text-[16px] font-medium leading-[24px] border-0 cursor-pointer transition-colors ${
-                          sort === option.value
-                            ? 'bg-primary-50 text-primary'
-                            : 'bg-white text-grey-500 hover:bg-grey-100'
-                        }`}
+                        className="flex w-full items-center border-0 bg-white px-[20px] py-[10px] text-[16px] font-medium leading-[24px] text-grey-500 cursor-pointer transition-colors hover:bg-primary-100 hover:text-primary"
                       >
                         {option.label}
                       </button>
@@ -241,6 +216,7 @@ export default function CatalogPage() {
           )}
         </div>
       </div>
+    </div>
     </div>
   )
 }

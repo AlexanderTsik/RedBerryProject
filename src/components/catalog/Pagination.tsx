@@ -1,24 +1,19 @@
+import PaginationArrowRight from '../../assets/Icons/icon-set/pagination-arrow-right.svg?react'
+
 interface Props {
   currentPage: number
   lastPage: number
   onPageChange: (page: number) => void
 }
 
-/** Arrow icon — points left by default; pass `direction="right"` to flip. */
-function ArrowIcon({ disabled, direction = 'left' }: { disabled?: boolean; direction?: 'left' | 'right' }) {
+/** Arrow icon — right arrow by default; pass `direction="left"` to flip. */
+function ArrowIcon({ disabled, direction = 'right' }: { disabled?: boolean; direction?: 'left' | 'right' }) {
   return (
-    <svg
-      width="15"
-      height="23"
-      viewBox="0 0 15 23"
-      fill="none"
-      className={`shrink-0 ${direction === 'right' ? 'rotate-180' : ''}`}
-    >
-      <path
-        d="M7.24077 4.78977L8.2635 5.80114L4.71236 9.35227L13.6328 9.35227L13.6328 10.8295L4.71236 10.8295L8.26349 14.375L7.24077 15.392L1.93963 10.0909L7.24077 4.78977Z"
-        fill={disabled ? '#D1D1D1' : '#4F46E5'}
-      />
-    </svg>
+    <PaginationArrowRight
+      className={`shrink-0 ${direction === 'left' ? 'rotate-180' : ''} ${
+        disabled ? '[&_path]:fill-[#D1D1D1]' : '[&_path]:fill-[#4F46E5]'
+      }`}
+    />
   )
 }
 

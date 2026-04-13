@@ -32,10 +32,10 @@ export default function CatalogCourseCard({ course }: Props) {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="flex flex-col bg-white border border-grey-100 rounded-[12px] overflow-clip p-[20px] no-underline transition-[filter] duration-200 hover:drop-shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:drop-shadow-[0px_0px_45px_rgba(138,130,212,0.15)]"
+      className="flex flex-col h-full bg-white border border-grey-100 rounded-[12px] overflow-clip p-[20px] no-underline transition-[filter] duration-200 hover:drop-shadow-[0px_0px_25px_rgba(138,130,212,0.1)] active:drop-shadow-[0px_0px_45px_rgba(138,130,212,0.15)]"
     >
       {/* Inner wrapper with gap-[18px] */}
-      <div className="flex flex-col gap-[18px] items-start w-full">
+      <div className="flex flex-col gap-[18px] items-start w-full flex-1">
         {/* Top section: image + meta + title + category */}
         <div className="flex flex-col gap-[18px] items-start w-full">
           {/* Image */}
@@ -57,18 +57,18 @@ export default function CatalogCourseCard({ course }: Props) {
               {/* Meta: instructor | weeks | star rating */}
               <div className="flex flex-wrap gap-y-[8px] items-center justify-between w-full">
                 <div className="flex gap-[8px] items-center">
-                  <p className="text-[14px] font-medium leading-normal text-grey-300 whitespace-nowrap">
+                  <p className="text-[14px] font-medium leading-[14px] text-grey-300 whitespace-nowrap">
                     {course.instructor.name}
                   </p>
                   <div className="w-[2px] h-[14px] bg-grey-200 rounded-[100px] shrink-0" />
-                  <p className="text-[14px] font-medium leading-normal text-grey-300 whitespace-nowrap">
+                  <p className="text-[14px] font-medium leading-[14px] text-grey-300 whitespace-nowrap">
                     {course.durationWeeks} Weeks
                   </p>
                 </div>
                 {course.avgRating != null && (
                   <div className="flex items-center gap-[4px] shrink-0">
                     <IconStarFill className="size-[18px]" aria-hidden />
-                    <span className="text-[14px] font-medium text-grey-600 leading-normal whitespace-nowrap">
+                    <span className="text-[14px] font-medium text-grey-600 leading-[14px] whitespace-nowrap">
                       {course.avgRating.toFixed(1)}
                     </span>
                   </div>
@@ -76,7 +76,7 @@ export default function CatalogCourseCard({ course }: Props) {
               </div>
 
               {/* Title */}
-              <p className="text-[24px] font-semibold leading-normal text-grey-950">
+              <p className="text-[24px] font-semibold leading-[24px] text-grey-950">
                 {course.title}
               </p>
             </div>
@@ -85,7 +85,9 @@ export default function CatalogCourseCard({ course }: Props) {
           {/* Category chip */}
           <div className="flex flex-wrap gap-y-[8px] items-start w-full">
             <div className="flex items-center justify-center gap-[6px] bg-grey-100 rounded-[12px] px-[12px] py-[8px]">
-              {CatIcon && <CatIcon className="size-[18px] shrink-0" />}
+              {CatIcon && (
+                <CatIcon className="size-[18px] shrink-0 [&_path]:fill-[#525252] [&_path]:stroke-[#525252]" />
+              )}
               <span className="text-[16px] font-medium leading-[24px] text-grey-600 whitespace-nowrap text-center">
                 {course.category.name}
               </span>
@@ -94,12 +96,12 @@ export default function CatalogCourseCard({ course }: Props) {
         </div>
 
         {/* Price + Details row */}
-        <div className="flex items-center justify-between w-full h-[48px]">
+        <div className="mt-auto flex items-center justify-between w-full h-[48px]">
           <div className="flex flex-col items-start justify-center leading-normal whitespace-nowrap w-[144px]">
-            <span className="text-[12px] font-medium text-grey-300">
+            <span className="text-[12px] font-medium leading-[12px] text-grey-300">
               Starting from
             </span>
-            <span className="text-[24px] font-semibold text-grey-700">
+            <span className="text-[24px] font-semibold leading-[24px] text-grey-700">
               {formatPrice(course.basePrice)}
             </span>
           </div>
