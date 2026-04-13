@@ -17,7 +17,7 @@ export default function Navbar() {
   const { isAuthenticated, user } = useAuth()
   const { openModal, openSidebar } = useModal()
   const location = useLocation()
-  const isBrowsePage = location.pathname === '/courses' || location.pathname.startsWith('/courses/')
+  const isBrowsePage = location.pathname === '/courses'
 
   return (
     <header className="w-full shrink-0 border-b border-grey-200 bg-grey-100 py-[24px] shadow-[0_0_11.7px_rgba(0,0,0,0.04)]">
