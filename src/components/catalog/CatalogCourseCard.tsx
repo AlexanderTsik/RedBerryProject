@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Course } from '../../types'
 import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
+import { formatPrice } from '../../utils/formatPrice'
 
 // Map category name → icon-set SVG (loaded eagerly so vite can tree-shake)
 import IconDevelopment from '../../assets/icons/icon-set/icon-development.svg?react'
@@ -15,11 +16,6 @@ const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>>
   Business: IconBusiness,
   'Data Science': IconDataScience,
   Marketing: IconMarketing,
-}
-
-function formatPrice(price: string | number): string {
-  const n = typeof price === 'string' ? parseFloat(price) : price
-  return `$${Math.floor(n).toLocaleString('en-US')}`
 }
 
 interface Props {
@@ -85,9 +81,7 @@ export default function CatalogCourseCard({ course }: Props) {
           {/* Category chip */}
           <div className="flex flex-wrap gap-y-[8px] items-start w-full">
             <div className="flex items-center justify-center gap-[6px] bg-grey-100 rounded-[12px] px-[12px] py-[8px]">
-              {CatIcon && (
-                <CatIcon className="size-[18px] shrink-0 [&_path]:fill-[#525252] [&_path]:stroke-[#525252]" />
-              )}
+              {CatIcon && <CatIcon className="size-[18px] shrink-0" />}
               <span className="text-[16px] font-medium leading-[24px] text-grey-600 whitespace-nowrap text-center">
                 {course.category.name}
               </span>

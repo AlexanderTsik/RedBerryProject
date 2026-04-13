@@ -7,6 +7,9 @@ import { createEnrollment, completeEnrollment, deleteEnrollment } from '../api/e
 import { submitReview } from '../api/reviews'
 import { useAuth } from '../store/AuthContext'
 import { useModal } from '../hooks/useModal'
+import { secondaryActionBaseClass, secondaryActionSoftHoverClass } from '../components/ui/buttonStyles'
+import { formatPrice } from '../utils/formatPrice'
+import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../utils/formatSchedule'
 import type { WeeklySchedule, TimeSlot, SessionType, ScheduleConflict } from '../types'
 
 // ─── Icons (SVG as React components) ────────────────────────────────────────
@@ -54,13 +57,10 @@ const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>>
 }
 
 // ─── Session type icon map ──────────────────────────────────────────────────
-const SESSION_TYPE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+const SESSION_TYPE_ICON: Record<SessionTypeKey, React.ComponentType<{ className?: string }>> = {
   online: IconDesktop,
-  Online: IconDesktop,
   in_person: IconUsers,
-  'In-Person': IconUsers,
   hybrid: IconIntersect,
-  Hybrid: IconIntersect,
 }
 
 const DEFAULT_WEEKLY_SCHEDULE_LABELS = [
@@ -187,12 +187,6 @@ function WarningIcon({ className }: { className?: string }) {
 // ─── Arrow right icon ───────────────────────────────────────────────────────
 function ArrowRightIcon() {
   return <CourseArrowRight className="size-[16px] shrink-0" aria-hidden />
-}
-
-// ─── Format price ───────────────────────────────────────────────────────────
-function formatPrice(price: string | number): string {
-  const n = typeof price === 'string' ? parseFloat(price) : price
-  return `$${Math.floor(n).toLocaleString('en-US')}`
 }
 
 // ─── Format 24h time to 12h (e.g. "09:00:00" → "9:00 AM") ─────────────
@@ -886,12 +880,9 @@ export default function CoursePage() {
                           const isLowSeats = liveData ? liveData.availableSeats > 0 && liveData.availableSeats < 5 : false
                           // Use the live data for dynamic values when available, otherwise fallback to generic
                           const displayData = liveData || st
-                          const TypeIcon = SESSION_TYPE_ICON[st.name] || IconDesktop
-                          // Capitalize name: "online" → "Online", "in_person" → "In-Person"
-                          const displayName = st.name
-                            .replace(/_/g, '-')
-                            .replace(/\b\w/g, c => c.toUpperCase())
-                            .replace('In-person', 'In-Person')
+                          const sessionTypeKey = normalizeSessionTypeKey(st.name)
+                          const TypeIcon = sessionTypeKey ? SESSION_TYPE_ICON[sessionTypeKey] : IconDesktop
+                          const displayName = formatSessionTypeLabel(st.name)
 
                           return (
                             <div key={st.name} className="flex flex-col items-center gap-[8px] flex-1 min-w-0">
@@ -921,7 +912,7 @@ export default function CoursePage() {
                                 }`}>
                                   {displayName}
                                 </span>
-                                {st.name === 'online' ? (
+                                {normalizeSessionTypeKey(st.name) === 'online' ? (
                                   <div className="flex items-center justify-center gap-[2px] w-full">
                                     <span className={`text-[12px] font-normal leading-[12px] ${isDisabled ? 'text-grey-300' : 'text-grey-600'}`}>
                                       Google Meet
@@ -1135,11 +1126,9 @@ export default function CoursePage() {
                     )}
                     {(() => {
                       const stName = enrollment.schedule.sessionType.name
-                      const StIcon = SESSION_TYPE_ICON[stName] || IconDesktop
-                      const displayName = stName
-                        .replace(/_/g, '-')
-                        .replace(/\b\w/g, c => c.toUpperCase())
-                        .replace('In-person', 'In-Person')
+                      const sessionTypeKey = normalizeSessionTypeKey(stName)
+                      const StIcon = sessionTypeKey ? SESSION_TYPE_ICON[sessionTypeKey] : IconDesktop
+                      const displayName = formatSessionTypeLabel(stName)
                       return (
                         <div className="flex items-center gap-[12px]">
                           <StIcon className="size-[24px] shrink-0" />
@@ -1345,7 +1334,7 @@ export default function CoursePage() {
             <button
               type="button"
               onClick={() => { setConflicts(null); handleEnroll(true) }}
-              className="flex flex-1 items-center justify-center rounded-[8px] border-2 border-primary-300 bg-white px-[16px] py-[12px] cursor-pointer hover:bg-primary-50 transition-colors"
+              className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} flex-1`}
             >
               <span className="text-[16px] font-medium leading-[24px] text-primary">Continue Anyway</span>
             </button>
@@ -1378,7 +1367,7 @@ export default function CoursePage() {
             <button
               type="button"
               onClick={() => { setShowProfileModal(false); openModal('profile') }}
-              className="flex flex-1 items-center justify-center rounded-[8px] border-2 border-primary-300 bg-white px-[16px] py-[12px] cursor-pointer hover:bg-primary-50 transition-colors"
+              className={`${secondaryActionBaseClass} ${secondaryActionSoftHoverClass} flex-1`}
             >
               <span className="text-[16px] font-medium leading-[24px] text-primary">Complete Profile</span>
             </button>
