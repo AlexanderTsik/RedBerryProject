@@ -35,7 +35,7 @@ export default function Footer() {
                   <span className="text-[24px] font-medium leading-[1.21] text-primary-800">Bootcamp</span>
                 </div>
                 <p className="mt-4 max-w-[310px] text-[14px] font-medium leading-[1.21] text-primary-800">
-                  Your learning journey starts here! Browse courses to get started.
+                  Your learning journey starts here! <br /> Browse courses to get started.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-[22px] text-primary-400">

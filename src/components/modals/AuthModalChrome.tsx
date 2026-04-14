@@ -54,8 +54,23 @@ export function AuthModalDivider() {
 export const authFieldLabelClass =
   'block text-[14px] font-medium leading-[1.21] text-grey-700'
 
-export const authTextInputClass =
-  'w-full rounded-lg border-[1.5px] border-grey-200 bg-white px-[13px] py-3 text-[14px] font-medium leading-[1.21] text-grey-900 placeholder:text-grey-400 focus:border-primary focus:outline-none'
+export const authFieldLabelErrorClass =
+  'block text-[14px] font-medium leading-[1.21] text-error'
 
-export const authPrimaryButtonClass =
-  'flex w-full items-center justify-center rounded-lg bg-primary px-[25px] py-[17px] text-[16px] font-medium leading-[1.5] text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50'
+export const authTextInputClass =
+  'w-full rounded-lg border-[1.5px] border-grey-200 bg-white px-[13px] py-3 text-[14px] font-medium leading-[1.21] text-grey-700 placeholder:text-grey-400 transition-colors hover:border-grey-300 focus:border-grey-400 focus:outline-none'
+
+export const authTextInputErrorClass =
+  'border-error text-error placeholder:text-error hover:border-error focus:border-error'
+
+export const authInputWrapClass =
+  'flex h-12 items-center rounded-lg border-[1.5px] border-grey-200 bg-white px-[13px] pr-3 transition-colors hover:border-grey-300 focus-within:border-grey-400'
+
+export const authInputWrapErrorClass =
+  'border-error hover:border-error focus-within:border-error'
+
+export const authInputFieldClass =
+  'min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-medium leading-[1.21] text-grey-700 placeholder:text-grey-400 focus:outline-none'
+
+export const authInputFieldErrorClass =
+  'text-error placeholder:text-error'
