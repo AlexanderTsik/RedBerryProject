@@ -5,6 +5,7 @@ import { useModal } from '../../hooks/useModal'
 import { useAuth } from '../../store/AuthContext'
 import { getEnrollments } from '../../api/enrollments'
 import { getCourseById } from '../../api/courses'
+import { extractCourseRating } from '../../utils/extractCourseRating'
 import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../../utils/formatSchedule'
 import { formatTimeSlotWithHours } from '../../utils/formatTimeSlot'
 import { secondaryButtonClass } from '../ui/buttonStyles'
@@ -23,46 +24,6 @@ const SESSION_TYPE_ICON: Record<SessionTypeKey, React.ComponentType<{ className?
   online: IconDesktop,
   in_person: IconUsers,
   hybrid: IconIntersect,
-}
-
-function toNumberOrNull(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string') {
-    const parsed = Number(value)
-    if (Number.isFinite(parsed)) return parsed
-  }
-  return null
-}
-
-function extractCourseRating(course: unknown): number | null {
-  if (!course || typeof course !== 'object') return null
-
-  const raw = course as {
-    avgRating?: unknown
-    avg_rating?: unknown
-    rating?: unknown
-    reviews?: Array<{ rating?: unknown }>
-  }
-
-  const direct =
-    toNumberOrNull(raw.avgRating) ??
-    toNumberOrNull(raw.avg_rating) ??
-    toNumberOrNull(raw.rating)
-
-  if (direct != null) return direct
-
-  if (Array.isArray(raw.reviews) && raw.reviews.length > 0) {
-    const nums = raw.reviews
-      .map((r) => toNumberOrNull(r.rating))
-      .filter((n): n is number => n != null)
-
-    if (nums.length > 0) {
-      const avg = nums.reduce((sum, n) => sum + n, 0) / nums.length
-      return Number(avg.toFixed(1))
-    }
-  }
-
-  return null
 }
 
 function SidebarCourseCard({

@@ -7,8 +7,8 @@ export default function DashboardPage() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <div className="min-h-screen bg-grey-100">
-      <div className="layout-frame flex flex-col gap-[64px] py-[64px]">
+    <div className="bg-grey-100">
+      <div className="layout-frame flex flex-col gap-[64px] pb-[268px] pt-[64px]">
         <HeroSlider />
         {isAuthenticated ? (
           <>

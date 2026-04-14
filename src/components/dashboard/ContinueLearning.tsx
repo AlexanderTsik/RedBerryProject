@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../store/AuthContext'
 import { useModal } from '../../hooks/useModal'
-import { getCoursesInProgress } from '../../api/courses'
+import { getCourseById } from '../../api/courses'
+import { getEnrollments } from '../../api/enrollments'
+import { extractCourseRating } from '../../utils/extractCourseRating'
 import ProgressCourseCard from './ProgressCourseCard'
 import IconLock from '../../assets/icons/icon-set/icon-lock.svg?react'
 import mockThumbnail from '../../assets/images/mock-progress-thumbnail.jpg'
@@ -21,14 +23,14 @@ const MOCK_CARDS = [
 function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_CARDS[0]) {
   return (
     <div
-      className="flex-1 min-w-0 bg-white border-[0.5px] border-grey-100 rounded-[12px] p-[20px] shadow-[0px_0px_11.7px_0px_rgba(0,0,0,0.04)] flex flex-col gap-[8px] items-start blur-[10px] pointer-events-none select-none"
+      className="flex h-full min-w-0 flex-col gap-[12px] items-start rounded-[12px] border-[0.5px] border-grey-100 bg-white p-[20px] shadow-[0px_0px_11.7px_0px_rgba(0,0,0,0.04)] blur-[10px] pointer-events-none select-none"
       aria-hidden
     >
       {/* Top: thumbnail + meta */}
-      <div className="flex h-[123px] items-stretch w-full">
-        <div className="flex flex-1 items-center justify-between self-stretch min-w-0">
+      <div className="flex w-full min-w-0 items-stretch gap-[16px]">
+        <div className="flex min-w-0 flex-1 items-start self-stretch">
           {/* Thumbnail */}
-          <div className="h-[123px] w-full max-w-[140px] shrink-0 relative rounded-[12px] overflow-hidden">
+          <div className="relative h-[123px] w-[118px] shrink-0 overflow-hidden rounded-[12px] 2xl:w-[132px]">
             <img
               src={mockThumbnail}
               alt=""
@@ -37,14 +39,14 @@ function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_C
           </div>
 
           {/* Right meta */}
-          <div className="flex flex-1 flex-col gap-[9px] h-full items-start min-w-0 pl-[16px] pr-[4px]">
+          <div className="flex min-w-0 flex-1 flex-col gap-[10px] items-start pl-[16px]">
             {/* Lecturer + rating */}
-            <div className="flex flex-wrap items-center justify-between w-full gap-y-[8px]">
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-[12px] gap-y-[8px]">
               <InstructorMeta name={lecturer} prefix="Lecturer" />
-              <RatingBadge rating={rating} />
+              <RatingBadge rating={rating} className="shrink-0" />
             </div>
             {/* Title */}
-            <p className="text-[20px] font-semibold leading-[24px] text-grey-900 w-full">
+            <p className="line-clamp-2 w-full text-[20px] font-semibold leading-[24px] text-grey-900">
               {title}
             </p>
           </div>
@@ -52,9 +54,9 @@ function MockBlurCard({ lecturer, rating, title, progress, fill }: typeof MOCK_C
       </div>
 
       {/* Bottom: progress bar + View button */}
-      <div className="flex items-end justify-between w-full">
+      <div className="mt-auto flex w-full min-w-0 items-end gap-[16px]">
         {/* Progress */}
-        <div className="flex flex-col gap-[4px] items-start justify-center pb-[4px] w-[336px] shrink-0">
+        <div className="flex min-w-0 flex-1 flex-col gap-[4px] items-start justify-center pb-[4px]">
           <p className="text-[12px] font-medium text-grey-900 leading-normal">
             {progress}% Complete
           </p>
@@ -80,10 +82,33 @@ export default function ContinueLearning() {
   const { openSidebar, openModal } = useModal()
 
   const { data: enrollments, isLoading } = useQuery({
-    queryKey: ['courses', 'in-progress'],
-    queryFn: getCoursesInProgress,
+    queryKey: ['enrollments'],
+    queryFn: getEnrollments,
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5,
+  })
+
+  const inProgress = (enrollments ?? []).filter((enrollment) => enrollment.progress < 100)
+  const cards = inProgress.slice(0, 4)
+
+  const { data: ratingsByCourseId = {} } = useQuery({
+    queryKey: ['continue-learning-ratings', cards.map((enrollment) => enrollment.course.id).sort((a, b) => a - b)],
+    enabled: isAuthenticated && cards.length > 0,
+    staleTime: 1000 * 60 * 5,
+    queryFn: async () => {
+      const ids = Array.from(new Set(cards.map((enrollment) => enrollment.course.id)))
+      const results = await Promise.allSettled(ids.map((id) => getCourseById(id)))
+
+      return results.reduce<Record<number, number | null>>((acc, result, index) => {
+        const id = ids[index]
+        if (result.status === 'fulfilled') {
+          acc[id] = extractCourseRating(result.value)
+        } else {
+          acc[id] = null
+        }
+        return acc
+      }, {})
+    },
   })
 
   // ── Unauthenticated: blurred placeholder state ────────────────────────────
@@ -146,7 +171,18 @@ export default function ContinueLearning() {
     return null
   }
 
-  const cards = enrollments.slice(0, 4)
+  if (cards.length === 0) {
+    return null
+  }
+
+  const cardsGridClass =
+    cards.length === 1
+      ? 'grid-cols-1'
+      : cards.length === 2
+        ? 'grid-cols-1 md:grid-cols-2'
+        : cards.length === 3
+          ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+          : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'
 
   // ── Authenticated with enrollments: real cards ────────────────────────────
   return (
@@ -171,9 +207,13 @@ export default function ContinueLearning() {
       </div>
 
       {/* Real enrollment cards */}
-      <div className="flex items-center justify-between w-full gap-[24px]">
+      <div className={`grid w-full gap-[24px] ${cardsGridClass}`}>
         {cards.map(enrollment => (
-          <ProgressCourseCard key={enrollment.id} enrollment={enrollment} />
+          <ProgressCourseCard
+            key={enrollment.id}
+            enrollment={enrollment}
+            rating={ratingsByCourseId[enrollment.course.id] ?? extractCourseRating(enrollment.course)}
+          />
         ))}
       </div>
     </div>

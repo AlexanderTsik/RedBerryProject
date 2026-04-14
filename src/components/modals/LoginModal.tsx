@@ -5,12 +5,19 @@ import { z } from 'zod'
 import { useModal } from '../../hooks/useModal'
 import { useAuth } from '../../store/AuthContext'
 import { login as loginApi } from '../../api/auth'
+import { parseValidationError } from '../../utils/parseAuthApiError'
+import { primaryButtonClass } from '../ui/buttonStyles'
 import {
   AuthModalChrome,
   AuthModalDivider,
   authFieldLabelClass,
-  authPrimaryButtonClass,
+  authFieldLabelErrorClass,
+  authInputFieldClass,
+  authInputFieldErrorClass,
+  authInputWrapClass,
+  authInputWrapErrorClass,
   authTextInputClass,
+  authTextInputErrorClass,
 } from './AuthModalChrome'
 import IconEyeOpen from '../../assets/icons/icon-set/icon-eye-open.svg?react'
 import IconEyeClosed from '../../assets/icons/icon-set/icon-eye-closed.svg?react'
@@ -49,19 +56,11 @@ export default function LoginModal() {
       login(response.data.token, response.data.user)
       handleClose()
     } catch (err: unknown) {
-      const error = err as {
-        response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } }
-      }
-      if (error.response?.status === 401) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 401) {
         setApiError('Invalid credentials.')
-      } else if (error.response?.status === 422) {
-        const fieldErrors = error.response.data?.errors
-        if (fieldErrors) {
-          const firstField = Object.keys(fieldErrors)[0]
-          setApiError(fieldErrors[firstField][0])
-        } else {
-          setApiError(error.response.data?.message || 'Validation failed.')
-        }
+      } else if (status === 422) {
+        setApiError(parseValidationError(err))
       } else {
         setApiError('Login failed. Please try again.')
       }
@@ -102,7 +101,7 @@ export default function LoginModal() {
           <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
             <div className="flex w-full flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <label htmlFor="login-email" className={authFieldLabelClass}>
+                <label htmlFor="login-email" className={errors.email ? authFieldLabelErrorClass : authFieldLabelClass}>
                   Email
                 </label>
                 <input
@@ -111,7 +110,7 @@ export default function LoginModal() {
                   type="email"
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className={authTextInputClass}
+                  className={`${authTextInputClass} ${errors.email ? authTextInputErrorClass : ''}`}
                 />
                 {errors.email && (
                   <p className="text-[12px] leading-[1.21] text-error">{errors.email.message}</p>
@@ -119,22 +118,22 @@ export default function LoginModal() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label htmlFor="login-password" className={authFieldLabelClass}>
+                <label htmlFor="login-password" className={errors.password ? authFieldLabelErrorClass : authFieldLabelClass}>
                   Password
                 </label>
-                <div className="flex h-12 items-center rounded-lg border-[1.5px] border-grey-200 px-[13px] pr-3 focus-within:border-primary">
+                <div className={`${authInputWrapClass} ${errors.password ? authInputWrapErrorClass : ''}`}>
                   <input
                     id="login-password"
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-medium leading-[1.21] text-grey-900 placeholder:text-grey-400 focus:outline-none"
+                    className={`${authInputFieldClass} ${errors.password ? authInputFieldErrorClass : ''}`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="ml-1 flex h-[22px] w-[22px] shrink-0 items-center justify-center text-grey-300 transition-colors hover:text-grey-500"
+                    className={`ml-1 flex h-[22px] w-[22px] shrink-0 items-center justify-center transition-colors ${errors.password ? 'text-error hover:text-error' : 'text-grey-300 hover:text-grey-500'}`}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -150,7 +149,11 @@ export default function LoginModal() {
               </div>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className={authPrimaryButtonClass}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`${primaryButtonClass} w-full rounded-lg text-[16px] font-medium leading-[1.5]`}
+            >
               {isSubmitting ? 'Logging in…' : 'Log In'}
             </button>
           </form>

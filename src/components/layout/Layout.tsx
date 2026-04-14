@@ -8,9 +8,9 @@ import EnrolledCoursesSidebar from '../sidebar/EnrolledCoursesSidebar'
 
 export default function Layout() {
   return (
-    <div className="mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[1920px] flex-col bg-grey-100">
+    <div className="mx-auto flex w-full max-w-[1920px] flex-col bg-grey-100">
       <Navbar />
-      <main className="flex min-h-0 flex-1 flex-col">
+      <main className="flex min-h-0 flex-col">
         <Outlet />
       </main>
       <Footer />
