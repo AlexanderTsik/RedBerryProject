@@ -1,4 +1,4 @@
-import PaginationArrowRight from '../../assets/Icons/icon-set/pagination-arrow-right.svg?react'
+import PaginationArrowRight from '../../assets/icons/icon-set/pagination-arrow-right.svg?react'
 
 interface Props {
   currentPage: number

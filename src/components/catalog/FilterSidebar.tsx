@@ -8,7 +8,7 @@ import IconDesign from '../../assets/icons/icon-set/icon-design.svg?react'
 import IconBusiness from '../../assets/icons/icon-set/icon-business.svg?react'
 import IconDataScience from '../../assets/icons/icon-set/icon-data-science.svg?react'
 import IconMarketing from '../../assets/icons/icon-set/icon-marketing.svg?react'
-import ClearFiltersX from '../../assets/Icons/icon-set/clear-filters-X.svg?react'
+import ClearFiltersX from '../../assets/icons/icon-set/clear-filters-X.svg?react'
 
 const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   Development: IconDevelopment,
