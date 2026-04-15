@@ -1180,3 +1180,4 @@ export default function CoursePage() {
     </div>
   )
 }
+

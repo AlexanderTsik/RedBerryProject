@@ -102,3 +102,4 @@ export default function CatalogCourseCard({ course }: Props) {
     </Link>
   )
 }
+
