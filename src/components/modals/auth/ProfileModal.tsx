@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useModal } from '../../hooks/useModal'
-import { useAuth } from '../../store/AuthContext'
-import { updateProfile } from '../../api/profile'
-import { parseValidationError } from '../../utils/parseAuthApiError'
-import { primaryButtonClass } from '../ui/buttonStyles'
-import IconEdit from '../../assets/icons/icon-set/icon-edit-profile.svg?react'
-import IconCheck from '../../assets/icons/icon-set/icon-check-profile.svg?react'
-import IconChevronDown from '../../assets/icons/icon-set/icon-chevron-Down.svg?react'
-import IconUserSilhouette from '../../assets/icons/modal/user-icon.svg?react'
-import IncompleteIndicator from '../../assets/icons/nav-icons/incomplete-indicator.svg?react'
-import CompleteIndicator from '../../assets/icons/nav-icons/complete-indicator.svg?react'
+import { useModal } from '../../../hooks/useModal'
+import { useAuth } from '../../../store/AuthContext'
+import { updateProfile } from '../../../api/profile'
+import { parseValidationError } from '../../../utils/parseAuthApiError'
+import { primaryButtonClass } from '../../ui/buttonStyles'
+import IconEdit from '../../../assets/icons/icon-set/icon-edit-profile.svg?react'
+import IconCheck from '../../../assets/icons/icon-set/icon-check-profile.svg?react'
+import IconChevronDown from '../../../assets/icons/icon-set/icon-chevron-Down.svg?react'
+import IconUserSilhouette from '../../../assets/icons/modal/user-icon.svg?react'
+import IncompleteIndicator from '../../../assets/icons/nav-icons/incomplete-indicator.svg?react'
+import CompleteIndicator from '../../../assets/icons/nav-icons/complete-indicator.svg?react'
 
 import {
   AuthModalChrome,
@@ -343,4 +343,3 @@ export default function ProfileModal() {
     </AuthModalChrome>
   )
 }
-

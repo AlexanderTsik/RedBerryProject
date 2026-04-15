@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import IconUpload from '../../assets/icons/icon-set/icon-upload.svg?react'
+import IconUpload from '../../../assets/icons/icon-set/icon-upload.svg?react'
 
 type Props = {
   file: File | null
