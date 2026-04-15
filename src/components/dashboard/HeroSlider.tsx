@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import bg1 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage1.png'
 import bg2 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage2.png'
 import bg3 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage3.png'
-import ArrowLeftIcon from '../../assets/icons/hero-slider/arrow-left.svg?react'
-import ArrowRightIcon from '../../assets/icons/hero-slider/arrow-right.svg?react'
+import ArrowLeftIcon from '../../assets/Icons/hero-slider/arrow-left.svg?react'
+import ArrowRightIcon from '../../assets/Icons/hero-slider/arrow-right.svg?react'
 import { primaryButtonClass } from '../ui/buttonStyles'
 
 // ─── Slide data ──────────────────────────────────────────────────────────────

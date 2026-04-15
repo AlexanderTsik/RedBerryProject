@@ -125,9 +125,13 @@ export default function ContinueLearning() {
               Pick up where you left
             </p>
           </div>
-          <span className="text-[20px] font-medium leading-normal text-primary underline decoration-solid whitespace-nowrap shrink-0">
+          <button
+            type="button"
+            onClick={() => openModal('login')}
+            className="text-[20px] font-medium leading-normal text-primary underline decoration-solid whitespace-nowrap shrink-0"
+          >
             See All
-          </span>
+          </button>
         </div>
 
         {/* Blurred cards + lock overlay */}
