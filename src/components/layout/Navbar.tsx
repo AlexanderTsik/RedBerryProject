@@ -2,12 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useModal } from '../../hooks/useModal'
 import { primaryButtonClass, secondaryButtonClass } from '../ui/buttonStyles'
-import logo from '../../assets/Icons/logo.svg'
-import avatarDefault from '../../assets/Icons/nav-icons/avatar-default.svg'
-import NavSparkleIcon from '../../assets/Icons/nav-icons/nav-sparkle.svg?react'
-import NavBookIcon from '../../assets/Icons/nav-icons/nav-book.svg?react'
-import IncompleteIndicator from '../../assets/Icons/nav-icons/incomplete-indicator.svg?react'
-import CompleteIndicator from '../../assets/Icons/nav-icons/complete-indicator.svg?react'
+import logo from '../../assets/icons/logo.svg'
+import avatarDefault from '../../assets/icons/nav-icons/avatar-default.svg'
+import NavSparkleIcon from '../../assets/icons/nav-icons/nav-sparkle.svg?react'
+import NavBookIcon from '../../assets/icons/nav-icons/nav-book.svg?react'
+import IncompleteIndicator from '../../assets/icons/nav-icons/incomplete-indicator.svg?react'
+import CompleteIndicator from '../../assets/icons/nav-icons/complete-indicator.svg?react'
 
 const navItemClass =
   'flex items-center gap-2 rounded-lg p-[15px] text-[20px] font-medium leading-[20px] text-grey-600 no-underline transition-colors duration-200 hover:text-primary'
@@ -96,3 +96,4 @@ export default function Navbar() {
     </header>
   )
 }
+
