@@ -18,7 +18,7 @@ import IconDesktop from '../../assets/icons/icon-set/icon-desktop.svg?react'
 import IconUsers from '../../assets/icons/icon-set/icon-users.svg?react'
 import IconIntersect from '../../assets/icons/icon-set/icon-intersect.svg?react'
 import IconStarFill from '../../assets/icons/icon-set/icon-star.svg?react'
-import packageOpenIcon from '../../assets/Icons/icon-set/icon-package-open.svg'
+import packageOpenIcon from '../../assets/icons/icon-set/icon-package-open.svg'
 
 const SESSION_TYPE_ICON: Record<SessionTypeKey, React.ComponentType<{ className?: string }>> = {
   online: IconDesktop,

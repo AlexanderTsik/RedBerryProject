@@ -1,19 +1,18 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCourseById } from '../api/courses'
-import { getWeeklySchedules, getTimeSlots, getSessionTypes } from '../api/schedule'
-import { createEnrollment, completeEnrollment, deleteEnrollment } from '../api/enrollments'
-import { submitReview } from '../api/reviews'
 import { useAuth } from '../store/AuthContext'
 import { useModal } from '../hooks/useModal'
+import { useCourseFetching } from '../hooks/useCourseFetching'
+import { useScheduleSelection } from '../hooks/useScheduleSelection'
+import { useEnrollmentMutations, type EnrollmentMutationsCallbacks } from '../hooks/useEnrollmentMutations'
+import { useEnrollmentLogic } from '../hooks/useEnrollmentLogic'
 import { primaryButtonClass, secondaryButtonClass } from '../components/ui/buttonStyles'
 import ProgressBar from '../components/ui/ProgressBar'
 import RatingBadge from '../components/ui/RatingBadge'
 import { formatTime, formatTimeSlotWithHours } from '../utils/formatTimeSlot'
 import { formatPrice } from '../utils/formatPrice'
 import { formatSessionTypeLabel, normalizeSessionTypeKey, type SessionTypeKey } from '../utils/formatSchedule'
-import type { WeeklySchedule, TimeSlot, SessionType, ScheduleConflict } from '../types'
+import type { ScheduleConflict } from '../types'
 
 // ─── Icons (SVG as React components) ────────────────────────────────────────
 import IconCalendar from '../assets/icons/icon-set/icon-calendar.svg?react'
@@ -39,15 +38,15 @@ import IconDataScience from '../assets/icons/icon-set/icon-data-science.svg?reac
 import IconMarketing from '../assets/icons/icon-set/icon-marketing.svg?react'
 import IconRetake from '../assets/icons/icon-set/icon-retake.svg?react'
 import IconCheck2 from '../assets/icons/icon-set/icon-check-2.svg?react'
-import BreadcrumbArrow from '../assets/Icons/icon-set/icon-arrow-breadcrumb.svg?react'
-import DropdownArrow from '../assets/Icons/icon-set/icon-course-arrow-dropdown.svg?react'
-import CourseArrowRight from '../assets/Icons/icon-set/icon-course-arrow-right.svg?react'
-import RatingStarBase from '../assets/Icons/icon-set/rating-star-base.svg?react'
-import RatingStarColored from '../assets/Icons/icon-set/rating-star-colored.svg?react'
+import BreadcrumbArrow from '../assets/icons/icon-set/icon-arrow-breadcrumb.svg?react'
+import DropdownArrow from '../assets/icons/icon-set/icon-course-arrow-dropdown.svg?react'
+import CourseArrowRight from '../assets/icons/icon-set/icon-course-arrow-right.svg?react'
+import RatingStarBase from '../assets/icons/icon-set/rating-star-base.svg?react'
+import RatingStarColored from '../assets/icons/icon-set/rating-star-colored.svg?react'
 // ─── Modal icons ─────────────────────────────────────────────────────────────
 import ModalSuccessIcon from '../assets/icons/modal/success-icon.svg?react'
 import ModalCompleteIcon from '../assets/icons/modal/complete-icon.svg?react'
-import ModalWarningIcon from '../assets/Icons/modal/warning-icon.svg?react'
+import ModalWarningIcon from '../assets/icons/modal/warning-icon.svg?react'
 import ModalUserIcon from '../assets/icons/modal/user-icon.svg?react'
 
 // ─── Category icon map ──────────────────────────────────────────────────────
@@ -65,13 +64,6 @@ const SESSION_TYPE_ICON: Record<SessionTypeKey, React.ComponentType<{ className?
   in_person: IconUsers,
   hybrid: IconIntersect,
 }
-
-const DEFAULT_WEEKLY_SCHEDULE_LABELS = [
-  'Monday - Wednesday',
-  'Tuesday - Thursday',
-  'Friday - Saturday',
-  'Weekend Only (Saturday - Sunday)',
-] as const
 
 // ─── Time slot icon map ─────────────────────────────────────────────────────
 function getTimeSlotIcon(label: string) {
@@ -146,15 +138,6 @@ function formatWeekLabel(label: string): string {
   return label.replace(/Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Weekend/gi, m => {
     return map[m.toLowerCase()] ?? m
   })
-}
-
-function normalizeWeeklyScheduleLabel(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[()]/g, '')
-    .replace(/only/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 function formatCompactMeridiemTime(time: string): string {
@@ -271,264 +254,85 @@ function RatingCard({
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>()
   const courseId = Number(id)
-  const queryClient = useQueryClient()
   const { isAuthenticated, user } = useAuth()
   const { openModal } = useModal()
 
-  // ── Course data ─────────────────────────────────────────────────────────
-  const { data: course, isLoading } = useQuery({
-    queryKey: ['course', courseId],
-    queryFn: () => getCourseById(courseId),
-    enabled: !!courseId,
-  })
-
-  // ── Schedule selection state ────────────────────────────────────────────
-  const [selectedSchedule, setSelectedSchedule] = useState<WeeklySchedule | null>(null)
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null)
-  const [selectedSessionType, setSelectedSessionType] = useState<SessionType | null>(null)
-  const [scheduleOpen, setScheduleOpen] = useState(false)
-  const [timeSlotsOpen, setTimeSlotsOpen] = useState(false)
-  const [sessionTypesOpen, setSessionTypesOpen] = useState(false)
-
-  // ── Conflict state ──────────────────────────────────────────────────────
-  const [conflicts, setConflicts] = useState<ScheduleConflict[] | null>(null)
-
-  // ── Rating state ────────────────────────────────────────────────────────
-  const [pendingRating, setPendingRating] = useState(0)
-
-  // ── Enrollment error state ─────────────────────────────────────────────
-  const [enrollError, setEnrollError] = useState<string | null>(null)
-
-  // ── Modal visibility state ─────────────────────────────────────────────
+  // ── Local state ────────────────────────────────────────────────────────
   const [showCompletedModal, setShowCompletedModal] = useState(false)
   const [showEnrolledModal, setShowEnrolledModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [modalRating, setModalRating] = useState(0)
   const [modalRatingHover, setModalRatingHover] = useState(0)
+  const [conflicts, setConflicts] = useState<ScheduleConflict[] | null>(null)
+  const [enrollError, setEnrollError] = useState<string | null>(null)
+  const [pendingRating, setPendingRating] = useState(0)
 
-  // ── Weekly schedules query ──────────────────────────────────────────────
-  const { data: weeklySchedules } = useQuery({
-    queryKey: ['weeklySchedules', courseId],
-    queryFn: () => getWeeklySchedules(courseId),
-    enabled: !!courseId && !course?.enrollment,
-  })
+  // ── Data fetching ──────────────────────────────────────────────────────
+  const { course, isLoading: courseLoading, weeklySchedules, allTimeSlotsMap, allSessionTypesMap, physicalLocation, uniqueTimeSlots, uniqueSessionTypes } =
+    useCourseFetching(courseId)
 
-  // ── Fetch ALL time slots for ALL weekly schedules ─────────────────────
-  const { data: allTimeSlotsMap } = useQuery({
-    queryKey: ['allTimeSlots', courseId],
-    queryFn: async () => {
-      const map: Record<number, TimeSlot[]> = {}
-      await Promise.all(
-        weeklySchedules!.map(async ws => {
-          map[ws.id] = await getTimeSlots(courseId, ws.id)
-        }),
-      )
-      return map
-    },
-    enabled: !!courseId && !!weeklySchedules?.length && !course?.enrollment,
-  })
+  // ── Schedule selection ─────────────────────────────────────────────────
+  const { state: scheduleState, actions: scheduleActions, data: scheduleData } = useScheduleSelection(
+    weeklySchedules,
+    allTimeSlotsMap,
+    allSessionTypesMap,
+  )
 
-  // ── Fetch physical location (always — find the in-person/hybrid address) ─
-  const { data: physicalLocationData } = useQuery({
-    queryKey: ['physicalLocation', courseId],
-    queryFn: async () => {
-      const schedules = await getWeeklySchedules(courseId)
-      if (!schedules.length) return null
-      const timeSlots = await getTimeSlots(courseId, schedules[0].id)
-      if (!timeSlots.length) return null
-      const sessionTypes = await getSessionTypes(courseId, schedules[0].id, timeSlots[0].id)
-      return sessionTypes.find(st => st.location)?.location ?? null
-    },
-    enabled: !!courseId,
-  })
+  // ── Toggle handlers for schedule sections ──────────────────────────────
+  const toggleScheduleOpen = () => scheduleActions.setScheduleOpen(!scheduleState.scheduleOpen)
+  const toggleTimeSlotsOpen = () => scheduleActions.setTimeSlotsOpen(!scheduleState.timeSlotsOpen)
+  const toggleSessionTypesOpen = () => scheduleActions.setSessionTypesOpen(!scheduleState.sessionTypesOpen)
 
-  // ── Fetch ALL session types for ALL schedule + timeslot combos ────────
-  const { data: allSessionTypesMap } = useQuery({
-    queryKey: ['allSessionTypes', courseId],
-    queryFn: async () => {
-      const map: Record<string, SessionType[]> = {}
-      const combos: { wsId: number; tsId: number }[] = []
-      for (const ws of weeklySchedules!) {
-        for (const ts of allTimeSlotsMap![ws.id] || []) {
-          combos.push({ wsId: ws.id, tsId: ts.id })
-        }
-      }
-      await Promise.all(
-        combos.map(async ({ wsId, tsId }) => {
-          map[`${wsId}-${tsId}`] = await getSessionTypes(courseId, wsId, tsId)
-        }),
-      )
-      return map
-    },
-    enabled: !!courseId && !!weeklySchedules?.length && !!allTimeSlotsMap && !course?.enrollment,
-  })
-
-  // ── Derive unique time slots (deduplicated by id) ─────────────────────
-  const uniqueTimeSlots = useMemo<TimeSlot[]>(() => {
-    if (!allTimeSlotsMap) return []
-    const seen = new Map<number, TimeSlot>()
-    for (const slots of Object.values(allTimeSlotsMap)) {
-      for (const ts of slots) {
-        if (!seen.has(ts.id)) seen.set(ts.id, ts)
-      }
-    }
-    return Array.from(seen.values()).sort((a, b) => a.id - b.id)
-  }, [allTimeSlotsMap])
-
-  // ── Derive which time slot IDs are available for the selected schedule ─
-  const availableTimeSlotIds = useMemo<Set<number>>(() => {
-    if (!selectedSchedule || !allTimeSlotsMap) return new Set()
-    return new Set((allTimeSlotsMap[selectedSchedule.id] || []).map(ts => ts.id))
-  }, [selectedSchedule, allTimeSlotsMap])
-
-  const displayWeeklySchedules = useMemo(() => {
-    const availableSchedules = new Map(
-      (weeklySchedules ?? []).map(schedule => [normalizeWeeklyScheduleLabel(schedule.label), schedule]),
-    )
-
-    return DEFAULT_WEEKLY_SCHEDULE_LABELS.map(label => {
-      const matchedSchedule = availableSchedules.get(normalizeWeeklyScheduleLabel(label)) ?? null
-
-      return {
-        label,
-        schedule: matchedSchedule,
-        isAvailable: matchedSchedule !== null,
-      }
-    })
-  }, [weeklySchedules])
-
-  // ── Derive unique session types (deduplicated by name) ────────────────
-  const uniqueSessionTypes = useMemo<SessionType[]>(() => {
-    if (!allSessionTypesMap) return []
-    const seen = new Map<string, SessionType>()
-    for (const types of Object.values(allSessionTypesMap)) {
-      for (const st of types) {
-        if (!seen.has(st.name)) seen.set(st.name, st)
-      }
-    }
-    return Array.from(seen.values())
-  }, [allSessionTypesMap])
-
-  // ── Derive the actual session type data for the current ws+ts combo ───
-  const currentSessionTypes = useMemo<SessionType[]>(() => {
-    if (!selectedSchedule || !selectedTimeSlot || !allSessionTypesMap) return []
-    return allSessionTypesMap[`${selectedSchedule.id}-${selectedTimeSlot.id}`] || []
-  }, [selectedSchedule, selectedTimeSlot, allSessionTypesMap])
-
-  const availableSessionTypeNames = useMemo<Set<string>>(() => {
-    return new Set(currentSessionTypes.map(st => st.name))
-  }, [currentSessionTypes])
-
-  // ── Reset downstream selections when upstream changes ─────────────────
-  useEffect(() => {
-    setSelectedTimeSlot(null)
-    setSelectedSessionType(null)
-    if (selectedSchedule) {
-      setTimeSlotsOpen(true)
-      setSessionTypesOpen(false)
-    }
-  }, [selectedSchedule])
-
-  useEffect(() => {
-    setSelectedSessionType(null)
-    if (selectedTimeSlot) {
-      setSessionTypesOpen(true)
-    }
-  }, [selectedTimeSlot])
-
-  // ── Enroll mutation ─────────────────────────────────────────────────────
-  const enrollMutation = useMutation({
-    mutationFn: (payload: { courseId: number; courseScheduleId: number; sessionTypeId: number; force?: boolean }) =>
-      createEnrollment(payload),
-    onSuccess: () => {
+  // ── Enrollment mutations ───────────────────────────────────────────────
+  const mutationCallbacks: EnrollmentMutationsCallbacks = {
+    onEnrollSuccess: () => {
       setConflicts(null)
       setEnrollError(null)
       setShowEnrolledModal(true)
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] })
-      queryClient.invalidateQueries({ queryKey: ['inProgress'] })
     },
-    onError: (error: any) => {
-      if (error.response?.status === 409) {
-        const data = error.response.data
-        setConflicts(data.conflicts || [data.conflict].filter(Boolean))
-      } else {
-        const msg =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          'Enrollment failed. Please try again.'
-        setEnrollError(msg)
-        console.error('Enrollment error:', error.response?.data || error)
-      }
+    onEnrollError: (conflicts, error) => {
+      setConflicts(conflicts)
+      setEnrollError(error)
     },
-  })
-
-  // ── Complete mutation ───────────────────────────────────────────────────
-  const completeMutation = useMutation({
-    mutationFn: (enrollmentId: number) => completeEnrollment(enrollmentId),
-    onSuccess: () => {
+    onCompleteSuccess: () => {
       setModalRating(0)
       setShowCompletedModal(true)
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
     },
-  })
-
-  // ── Rating mutation ─────────────────────────────────────────────────────
-  const ratingMutation = useMutation({
-    mutationFn: (rating: number) => submitReview(courseId, rating),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    onRatingSuccess: () => {
+      // Rating submitted successfully
     },
-  })
-
-  // ── Retake (delete enrollment) mutation ────────────────────────────────
-  const retakeMutation = useMutation({
-    mutationFn: (enrollmentId: number) => deleteEnrollment(enrollmentId),
-    onSuccess: () => {
-      // Reset selections and refresh course data to go back to schedule selection
-      setSelectedSchedule(null)
-      setSelectedTimeSlot(null)
-      setSelectedSessionType(null)
-      setScheduleOpen(false)
-      setTimeSlotsOpen(false)
-      setSessionTypesOpen(false)
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] })
-      queryClient.invalidateQueries({ queryKey: ['inProgress'] })
-      queryClient.invalidateQueries({ queryKey: ['allTimeSlots', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['allSessionTypes', courseId] })
+    onRetakeSuccess: () => {
+      // Reset selections for retake
+      scheduleActions.setSelectedSchedule(null)
+      scheduleActions.setSelectedTimeSlot(null)
+      scheduleActions.setSelectedSessionType(null)
+      scheduleActions.setScheduleOpen(false)
+      scheduleActions.setTimeSlotsOpen(false)
+      scheduleActions.setSessionTypesOpen(false)
     },
-  })
-
-  // ── Enroll handler ──────────────────────────────────────────────────────
-  const handleEnroll = (force = false) => {
-    if (!isAuthenticated) {
-      openModal('login')
-      return
-    }
-    // Determine profile completeness — check field directly, fallback to computing from fields
-    const isProfileComplete =
-      user?.profileComplete ??
-      (user as any)?.profile_complete ??
-      (!!user?.fullName && !!user?.mobileNumber && user?.age != null)
-
-    if (user && !isProfileComplete) {
-      setShowProfileModal(true)
-      return
-    }
-    if (!selectedSessionType) return
-
-    setEnrollError(null)
-    enrollMutation.mutate({
-      courseId,
-      courseScheduleId: selectedSessionType.courseScheduleId,
-      sessionTypeId: selectedSessionType.id,
-      ...(force && { force: true }),
-    })
   }
 
-  // ── Loading state ───────────────────────────────────────────────────────
-  if (isLoading || !course) {
+  const { enrollMutation, completeMutation, ratingMutation, retakeMutation } = useEnrollmentMutations(
+    courseId,
+    mutationCallbacks,
+  )
+
+  // ── Enrollment logic ───────────────────────────────────────────────────
+  const { canEnroll, buttonClickable, handleEnroll: enrollHandler, isProfileComplete } = useEnrollmentLogic({
+    isAuthenticated,
+    user,
+    selectedSessionType: scheduleState.selectedSessionType,
+    enrollmentPending: enrollMutation.isPending,
+    onProfileIncomplete: () => setShowProfileModal(true),
+    onEnroll: (payload) => {
+      setEnrollError(null)
+      enrollMutation.mutate(payload)
+    },
+    courseId,
+  })
+
+  // ── Loading state ──────────────────────────────────────────────────────
+  if (courseLoading || !course) {
     return (
       <div className="min-h-screen bg-grey-100">
         <div className="layout-frame flex flex-col gap-[32px] pt-[72px] pb-[40px]">
@@ -549,41 +353,18 @@ export default function CoursePage() {
     )
   }
 
+  // ── Derived variables  ──────────────────────────────────────────────────────
   const enrollment = course.enrollment
   const isEnrolled = !!enrollment
   const isCompleted = enrollment?.progress === 100
-  // Physical location: always the in-person/hybrid address, regardless of session type chosen
-  const physicalLocation = physicalLocationData ?? null
-  const CatIcon = CATEGORY_ICON[course.category.name]
-
-  // Compute avg rating from reviews if not provided directly
+  const CatIcon = CATEGORY_ICON[course.category?.name]
   const avgRating =
     course.avgRating ??
-    (course.reviews.length > 0
-      ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length
+    (course.reviews?.length > 0
+      ? course.reviews.reduce((sum, review) => sum + review.rating, 0) / course.reviews.length
       : null)
-
-  // Use hours from API if available, otherwise estimate
-  const hours = (course as any).hours ?? course.durationWeeks * 10
-
-  // Profile completeness — handle both camelCase and snake_case API responses
-  const isProfileComplete =
-    user?.profileComplete ??
-    (user as any)?.profile_complete ??
-    (!!user?.fullName && !!user?.mobileNumber && user?.age != null)
-
-  // canEnroll = button is fully actionable (shows active style)
-  const canEnroll =
-    isAuthenticated &&
-    isProfileComplete &&
-    !!selectedSessionType &&
-    !enrollMutation.isPending
-
-  // buttonClickable = button should be clickable (shows pointer, triggers handleEnroll)
-  const buttonClickable = !enrollMutation.isPending
-
-  const totalPrice =
-    Number(course.basePrice) + Number(selectedSessionType?.priceModifier ?? 0)
+  const hours = course.hours ?? course.durationWeeks * 10
+  const totalPrice = Number(course.basePrice) + Number(scheduleState.selectedSessionType?.priceModifier ?? 0)
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
@@ -714,27 +495,27 @@ export default function CoursePage() {
                 <div className="flex flex-col gap-[18px] items-start w-full">
                   <button
                     type="button"
-                    onClick={() => setScheduleOpen(prev => !prev)}
+                    onClick={toggleScheduleOpen}
                     className="flex items-center justify-between w-full cursor-pointer border-0 bg-transparent p-0"
                   >
                     <div className="flex gap-[8px] items-center">
                       <StepIcon
-                        active={scheduleOpen}
-                        selected={!!selectedSchedule}
+                        active={scheduleState.scheduleOpen}
+                        selected={!!scheduleState.selectedSchedule}
                         InactiveIcon={IconOne}
                         SelectedIcon={IconOneFill}
                       />
-                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${scheduleOpen || selectedSchedule ? 'text-primary-800' : 'text-grey-400'}`}>
+                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${scheduleState.scheduleOpen || scheduleState.selectedSchedule ? 'text-primary-800' : 'text-grey-400'}`}>
                         Weekly Schedule
                       </span>
                     </div>
-                    <ChevronIcon open={scheduleOpen} active={scheduleOpen || !!selectedSchedule} />
+                    <ChevronIcon open={scheduleState.scheduleOpen} active={scheduleState.scheduleOpen || !!scheduleState.selectedSchedule} />
                   </button>
 
-                  {scheduleOpen && displayWeeklySchedules.length > 0 && (
+                  {scheduleState.scheduleOpen && scheduleData.displayWeeklySchedules.length > 0 && (
                     <div className="flex gap-[12px] items-center w-full">
-                      {displayWeeklySchedules.map(({ label, schedule, isAvailable }) => {
-                        const isSelected = !!schedule && selectedSchedule?.id === schedule.id
+                      {scheduleData.displayWeeklySchedules.map(({ label, schedule, isAvailable }) => {
+                        const isSelected = !!schedule && scheduleState.selectedSchedule?.id === schedule.id
                         const isDisabled = !isAvailable
                         return (
                           <button
@@ -743,7 +524,7 @@ export default function CoursePage() {
                             disabled={isDisabled}
                             onClick={() => {
                               if (schedule) {
-                                setSelectedSchedule(isSelected ? null : schedule)
+                                scheduleActions.setSelectedSchedule(isSelected ? null : schedule)
                               }
                             }}
                             className={`flex flex-1 items-center justify-center h-[91px] rounded-[12px] border border-solid p-[10px] transition-colors ${
@@ -768,29 +549,29 @@ export default function CoursePage() {
                 <div className="flex flex-col gap-[18px] items-start w-full">
                   <button
                     type="button"
-                    onClick={() => setTimeSlotsOpen(prev => !prev)}
+                    onClick={toggleTimeSlotsOpen}
                     className="flex items-center justify-between w-full cursor-pointer border-0 bg-transparent p-0"
                   >
                     <div className="flex gap-[8px] items-center">
                       <StepIcon
-                        active={timeSlotsOpen}
-                        selected={!!selectedTimeSlot}
+                        active={scheduleState.timeSlotsOpen}
+                        selected={!!scheduleState.selectedTimeSlot}
                         InactiveIcon={IconTwo}
                         SelectedIcon={IconTwoFill}
                       />
-                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${timeSlotsOpen || selectedTimeSlot ? 'text-primary-800' : 'text-grey-400'}`}>
+                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${scheduleState.timeSlotsOpen || scheduleState.selectedTimeSlot ? 'text-primary-800' : 'text-grey-400'}`}>
                         Time Slot
                       </span>
                     </div>
-                    <ChevronIcon open={timeSlotsOpen} active={timeSlotsOpen || !!selectedTimeSlot} />
+                    <ChevronIcon open={scheduleState.timeSlotsOpen} active={scheduleState.timeSlotsOpen || !!scheduleState.selectedTimeSlot} />
                   </button>
 
-                  {timeSlotsOpen && uniqueTimeSlots.length > 0 && (
+                  {scheduleState.timeSlotsOpen && uniqueTimeSlots.length > 0 && (
                     <div className="flex gap-[12px] items-center w-full">
                       {uniqueTimeSlots.map(ts => {
-                        const isAvailable = availableTimeSlotIds.has(ts.id)
-                        const isDisabled = !selectedSchedule || !isAvailable
-                        const isSelected = selectedTimeSlot?.id === ts.id
+                        const isAvailable = scheduleData.availableTimeSlotIds.has(ts.id)
+                        const isDisabled = !scheduleState.selectedSchedule || !isAvailable
+                        const isSelected = scheduleState.selectedTimeSlot?.id === ts.id
                         const SlotIcon = getTimeSlotIcon(ts.label)
                         // Extract short label (e.g. "Morning" from "Morning (9:00 AM - 11:00 AM)")
                         const shortLabel = ts.label.replace(/\s*\(.*\)/, '')
@@ -799,7 +580,7 @@ export default function CoursePage() {
                             key={ts.id}
                             type="button"
                             disabled={isDisabled}
-                            onClick={() => setSelectedTimeSlot(isSelected ? null : ts)}
+                            onClick={() => scheduleActions.setSelectedTimeSlot(isSelected ? null : ts)}
                             className={`group flex flex-1 flex-col items-center justify-center gap-[4px] rounded-[12px] border border-solid p-[16px] transition-colors ${
                               isDisabled
                                 ? 'bg-grey-100 border-grey-200 cursor-not-allowed'
@@ -838,41 +619,44 @@ export default function CoursePage() {
                 <div className="flex flex-col gap-[18px] items-start w-full">
                   <button
                     type="button"
-                    onClick={() => setSessionTypesOpen(prev => !prev)}
+                    onClick={toggleSessionTypesOpen}
                     className="flex items-center justify-between w-full cursor-pointer border-0 bg-transparent p-0"
                   >
                     <div className="flex gap-[8px] items-center">
                       <StepIcon
-                        active={sessionTypesOpen}
-                        selected={!!selectedSessionType}
+                        active={scheduleState.sessionTypesOpen}
+                        selected={!!scheduleState.selectedSessionType}
                         InactiveIcon={IconThree}
                         SelectedIcon={IconThreeFill}
                       />
-                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${sessionTypesOpen || selectedSessionType ? 'text-primary-800' : 'text-grey-400'}`}>
+                      <span className={`text-[24px] font-semibold leading-[24px] whitespace-nowrap ${scheduleState.sessionTypesOpen || scheduleState.selectedSessionType ? 'text-primary-800' : 'text-grey-400'}`}>
                         Session Type
                       </span>
                     </div>
-                    <ChevronIcon open={sessionTypesOpen} active={sessionTypesOpen || !!selectedSessionType} />
+                    <ChevronIcon open={scheduleState.sessionTypesOpen} active={scheduleState.sessionTypesOpen || !!scheduleState.selectedSessionType} />
                   </button>
 
-                  {sessionTypesOpen && uniqueSessionTypes.length > 0 && (
+                  {scheduleState.sessionTypesOpen && uniqueSessionTypes.length > 0 && (
                     <div className="flex flex-col gap-[12px] w-full">
                       <div className="flex gap-[12px] items-start w-full">
                         {uniqueSessionTypes.map(st => {
-                          // Find the actual live data for this session type in the current combo
-                          const liveData = currentSessionTypes.find(c => c.name === st.name)
-                          const isAvailable = availableSessionTypeNames.has(st.name)
-                          const isFullyBooked = liveData ? liveData.availableSeats === 0 : false
-                          const isDisabled = !selectedTimeSlot || !isAvailable || isFullyBooked
-                          const isSelected = selectedSessionType?.name === st.name
+                          // Find the actual live data for this session type in the CURRENT schedule+timeslot combo only
+                          const liveData = scheduleData.currentSessionTypes.find(c => c.name === st.name)
+                          const isAvailable = scheduleData.availableSessionTypeNames.has(st.name)
+                          // When a timeslot is selected and this type is absent from the combo, treat as fully booked
+                          const isFullyBooked = scheduleState.selectedTimeSlot
+                            ? liveData ? liveData.availableSeats === 0 : !isAvailable
+                            : false
+                          const isDisabled = !scheduleState.selectedTimeSlot || !isAvailable || isFullyBooked
+                          const isSelected = scheduleState.selectedSessionType?.name === st.name
                           const isLowSeats = liveData ? liveData.availableSeats > 0 && liveData.availableSeats < 5 : false
                           // Use the live data for dynamic values when available, otherwise fallback to generic
                           const displayData = liveData || st
                           const sessionTypeKey = normalizeSessionTypeKey(st.name)
                           const TypeIcon = sessionTypeKey ? SESSION_TYPE_ICON[sessionTypeKey] : IconDesktop
                           const displayName = formatSessionTypeLabel(st.name)
-                          const sessionHoursLabel = selectedTimeSlot
-                            ? `${formatTime(selectedTimeSlot.startTime)} – ${formatTime(selectedTimeSlot.endTime)}`
+                          const sessionHoursLabel = scheduleState.selectedTimeSlot
+                            ? `${formatTime(scheduleState.selectedTimeSlot.startTime)} – ${formatTime(scheduleState.selectedTimeSlot.endTime)}`
                             : null
 
                           return (
@@ -882,7 +666,7 @@ export default function CoursePage() {
                                 disabled={isDisabled}
                                 onClick={() => {
                                   if (liveData) {
-                                    setSelectedSessionType(isSelected ? null : liveData)
+                                    scheduleActions.setSelectedSessionType(isSelected ? null : liveData)
                                   }
                                 }}
                                 className={`group flex flex-col items-center justify-center gap-[8px] w-full rounded-[12px] border border-solid p-[20px] transition-colors ${
@@ -920,11 +704,11 @@ export default function CoursePage() {
                                       Google Meet
                                     </span>
                                   </div>
-                                ) : (displayData.location || physicalLocation) ? (
+                                ) : liveData?.location ? (
                                   <div className="flex items-center gap-[2px]">
                                     <IconMapPin className="size-[14px] shrink-0" />
                                     <span className={`text-[12px] font-normal leading-[12px] ${isDisabled ? 'text-grey-300' : 'text-grey-600'}`}>
-                                      {displayData.location || physicalLocation}
+                                      {liveData.location}
                                     </span>
                                   </div>
                                 ) : null}
@@ -940,8 +724,8 @@ export default function CoursePage() {
                                     : `+ $${Math.floor(Number(displayData.priceModifier))}`}
                                 </span>
                               </button>
-                              {/* Seats info */}
-                              {liveData && isAvailable && (
+                              {/* Seats info — show when timeslot is selected */}
+                              {scheduleState.selectedTimeSlot && (liveData || isFullyBooked) && (
                                 <span className={`text-[12px] font-medium leading-[12px] whitespace-nowrap ${
                                   isFullyBooked
                                     ? 'text-grey-400'
@@ -954,10 +738,10 @@ export default function CoursePage() {
                                   ) : isLowSeats ? (
                                     <span className="flex items-center gap-[4px]">
                                       <WarningIcon className="size-[16px]" />
-                                      Only {liveData.availableSeats} Seats Remaining
+                                      Only {liveData!.availableSeats} Seats Remaining
                                     </span>
                                   ) : (
-                                    `${liveData.availableSeats} Seats Available`
+                                    `${liveData!.availableSeats} Seats Available`
                                   )}
                                 </span>
                               )}
@@ -997,7 +781,7 @@ export default function CoursePage() {
                           Session Type
                         </span>
                         <span className="flex-1 text-[16px] font-medium leading-[24px] text-grey-800 text-right">
-                          + ${Math.floor(Number(selectedSessionType?.priceModifier ?? 0))}
+                          + ${Math.floor(Number(scheduleState.selectedSessionType?.priceModifier ?? 0))}
                         </span>
                       </div>
                     </div>
@@ -1007,7 +791,7 @@ export default function CoursePage() {
                   <button
                     type="button"
                     disabled={!buttonClickable}
-                    onClick={() => handleEnroll()}
+                    onClick={() => enrollHandler()}
                     className={`flex items-center justify-center h-[63px] rounded-[12px] w-full p-[10px] border-0 transition-colors ${
                       canEnroll
                         ? 'bg-primary cursor-pointer hover:bg-primary-600'
@@ -1140,11 +924,25 @@ export default function CoursePage() {
                         </div>
                       )
                     })()}
-                    {/* Location — physical address or "Google Meet" for online */}
+                    {/* Location — enrollment-specific location, with online fallback */}
                     <div className="flex items-center gap-[12px]">
                       <IconMapPin className="size-[24px] shrink-0" />
                       <span className="text-[20px] font-medium leading-[20px] text-grey-600">
-                        {physicalLocation ?? 'Google Meet'}
+                        {(() => {
+                          const enrolledSessionTypeKey = normalizeSessionTypeKey(
+                            enrollment.schedule.sessionType.name,
+                          )
+
+                          if (enrollment.schedule.location) {
+                            return enrollment.schedule.location
+                          }
+
+                          if (enrolledSessionTypeKey === 'online') {
+                            return 'Google Meet'
+                          }
+
+                          return physicalLocation ?? 'Location unavailable'
+                        })()}
                       </span>
                     </div>
                   </>
@@ -1330,7 +1128,7 @@ export default function CoursePage() {
           <div className="flex gap-[8px] items-center w-full">
             <button
               type="button"
-              onClick={() => { setConflicts(null); handleEnroll(true) }}
+              onClick={() => { setConflicts(null); enrollHandler(true) }}
               className={`${secondaryButtonClass} flex-1`}
             >
               <span className="text-[16px] font-medium leading-[24px] text-primary">Continue Anyway</span>

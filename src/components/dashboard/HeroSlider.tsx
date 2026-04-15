@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import bg1 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage1.png'
 import bg2 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage2.png'
 import bg3 from '../../assets/images/CarrouselBackgroundImages/BackgroundImage3.png'
-import ArrowLeftIcon from '../../assets/Icons/hero-slider/arrow-left.svg?react'
-import ArrowRightIcon from '../../assets/Icons/hero-slider/arrow-right.svg?react'
+import ArrowLeftIcon from '../../assets/icons/hero-slider/arrow-left.svg?react'
+import ArrowRightIcon from '../../assets/icons/hero-slider/arrow-right.svg?react'
 import { primaryButtonClass } from '../ui/buttonStyles'
 
 // ─── Slide data ──────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ const SLIDES = [
     id: 2,
     title: 'Learn together, grow faster',
     subtitle:
-      'Join a community of learners, connect with instructors, and stay motivated as you build new skills and advance your knowledge.',
+      '',
     cta: 'Learn More',
     ctaTo: '/courses',
     // Slide 3: tall image, different vertical offset (matches Figma Component 8)

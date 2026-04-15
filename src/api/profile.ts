@@ -1,4 +1,3 @@
-import { apiClient } from './client'
 import type { User } from '../types'
 
 const BASE_URL = 'https://api.redclass.redberryinternship.ge/api'

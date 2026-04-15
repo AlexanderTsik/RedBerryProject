@@ -6,8 +6,8 @@ import type { CoursesParams } from '../api/courses'
 import FilterSidebar from '../components/catalog/FilterSidebar'
 import CatalogCourseCard from '../components/catalog/CatalogCourseCard'
 import Pagination from '../components/catalog/Pagination'
-import DropdownArrow from '../assets/Icons/icon-set/icon-arrow-dropdown.svg?react'
-import BreadcrumbArrow from '../assets/Icons/icon-set/icon-arrow-breadcrumb.svg?react'
+import DropdownArrow from '../assets/icons/icon-set/icon-arrow-dropdown.svg?react'
+import BreadcrumbArrow from '../assets/icons/icon-set/icon-arrow-breadcrumb.svg?react'
 // Sort options
 const SORT_OPTIONS: { value: CoursesParams['sort']; label: string }[] = [
   { value: 'newest', label: 'Newest First' },
