@@ -6,10 +6,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Environment-based settings (optional)
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-[context.deploy-preview]
-  environment = { NODE_ENV = "production" }
