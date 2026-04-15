@@ -6,7 +6,11 @@ import { useCourseFetching } from '../hooks/useCourseFetching'
 import { useScheduleSelection } from '../hooks/useScheduleSelection'
 import { useEnrollmentMutations, type EnrollmentMutationsCallbacks } from '../hooks/useEnrollmentMutations'
 import { useEnrollmentLogic } from '../hooks/useEnrollmentLogic'
-import { primaryButtonClass, secondaryButtonClass } from '../components/ui/buttonStyles'
+import { primaryButtonClass } from '../components/ui/buttonStyles'
+import CourseCompletedModal from '../components/modals/course/CourseCompletedModal'
+import CourseEnrollmentConfirmedModal from '../components/modals/course/CourseEnrollmentConfirmedModal'
+import CourseEnrollmentConflictModal from '../components/modals/course/CourseEnrollmentConflictModal'
+import CourseCompleteProfileModal from '../components/modals/course/CourseCompleteProfileModal'
 import ProgressBar from '../components/ui/ProgressBar'
 import RatingBadge from '../components/ui/RatingBadge'
 import { formatTime, formatTimeSlotWithHours } from '../utils/formatTimeSlot'
@@ -43,11 +47,7 @@ import DropdownArrow from '../assets/icons/icon-set/icon-course-arrow-dropdown.s
 import CourseArrowRight from '../assets/icons/icon-set/icon-course-arrow-right.svg?react'
 import RatingStarBase from '../assets/icons/icon-set/rating-star-base.svg?react'
 import RatingStarColored from '../assets/icons/icon-set/rating-star-colored.svg?react'
-// ─── Modal icons ─────────────────────────────────────────────────────────────
-import ModalSuccessIcon from '../assets/icons/modal/success-icon.svg?react'
-import ModalCompleteIcon from '../assets/icons/modal/complete-icon.svg?react'
 import ModalWarningIcon from '../assets/icons/modal/warning-icon.svg?react'
-import ModalUserIcon from '../assets/icons/modal/user-icon.svg?react'
 
 // ─── Category icon map ──────────────────────────────────────────────────────
 const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -140,27 +140,6 @@ function formatWeekLabel(label: string): string {
   })
 }
 
-function formatCompactMeridiemTime(time: string): string {
-  return time.replace(/:00\s*/i, '').replace(/\s+/g, '')
-}
-
-function formatConflictScheduleLabel(schedule: string): string {
-  const [daysPart, timePart] = schedule.split(/\s+at\s+/i)
-
-  if (!timePart) {
-    return formatWeekLabel(daysPart).replace(/\s-\s/g, '-')
-  }
-
-  const timeMatch = timePart.match(/\(([^)]+)\)/)
-  const rawRange = timeMatch?.[1] ?? timePart
-  const [startTime = '', endTime = ''] = rawRange.split(/\s*-\s*/)
-  const compactDays = formatWeekLabel(daysPart).replace(/\s-\s/g, '-')
-  const compactStart = formatCompactMeridiemTime(startTime)
-  const compactEnd = formatCompactMeridiemTime(endTime)
-
-  return `${compactDays} at ${compactStart} - ${compactEnd}`.trim()
-}
-
 // ─── Warning icon ───────────────────────────────────────────────────────────
 function WarningIcon({ className }: { className?: string }) {
   return <ModalWarningIcon className={className} aria-hidden />
@@ -169,18 +148,6 @@ function WarningIcon({ className }: { className?: string }) {
 // ─── Arrow right icon ───────────────────────────────────────────────────────
 function ArrowRightIcon() {
   return <CourseArrowRight className="size-[16px] shrink-0" aria-hidden />
-}
-
-// ─── Modal base overlay ──────────────────────────────────────────────────────
-function ModalBase({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 bg-white rounded-[16px] p-[60px] w-[560px] max-w-[90vw] flex flex-col gap-[40px] items-center">
-        {children}
-      </div>
-    </div>
-  )
 }
 
 // ─── Rating card (Figma: white card, close button, 50px stars) ──────────
@@ -1025,159 +992,52 @@ export default function CoursePage() {
 
       {/* ── Congratulations Modal (after completing course) ─────────────── */}
       {showCompletedModal && (
-        <ModalBase onClose={() => setShowCompletedModal(false)}>
-          <div className="flex flex-col gap-[24px] items-center justify-center w-full">
-            <ModalSuccessIcon className="size-[94px] shrink-0" />
-            <div className="flex flex-col gap-[24px] items-center text-center w-full">
-              <h2 className="text-[32px] font-semibold leading-[32px] text-grey-700 w-full">
-                Congratulations!
-              </h2>
-              <p className="text-[20px] font-medium leading-[20px] text-grey-700 w-full">
-                You've completed{' '}
-                <span className="font-semibold">"{course.title}"</span>{' '}
-                Course!
-              </p>
-            </div>
-            {/* Star rating in modal */}
-            {!course.isRated && (
-              <div className="flex flex-col gap-[18px] items-center w-full">
-                <span className="text-[16px] font-medium leading-[24px] text-primary-400 text-center">
-                  Rate your experience
-                </span>
-                <div className="flex items-center justify-center gap-[18px]">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <button
-                      key={star}
-                      type="button"
-                      disabled={ratingMutation.isPending}
-                      onClick={() => {
-                        setModalRating(star)
-                        ratingMutation.mutate(star)
-                      }}
-                      onMouseEnter={() => setModalRatingHover(star)}
-                      onMouseLeave={() => setModalRatingHover(0)}
-                      className="cursor-pointer border-0 bg-transparent p-0"
-                    >
-                      {(modalRatingHover || modalRating) >= star ? (
-                        <RatingStarColored className="size-[46px] shrink-0" aria-hidden />
-                      ) : (
-                        <RatingStarBase className="size-[46px] shrink-0" aria-hidden />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowCompletedModal(false)}
-            className={`${primaryButtonClass} w-full`}
-          >
-            Done
-          </button>
-        </ModalBase>
+        <CourseCompletedModal
+          courseTitle={course.title}
+          isRated={course.isRated}
+          modalRating={modalRating}
+          modalRatingHover={modalRatingHover}
+          isRatingPending={ratingMutation.isPending}
+          onClose={() => setShowCompletedModal(false)}
+          onRate={(star) => {
+            setModalRating(star)
+            ratingMutation.mutate(star)
+          }}
+          onHoverChange={setModalRatingHover}
+        />
       )}
 
       {/* ── Enrollment Confirmed Modal ──────────────────────────────────── */}
       {showEnrolledModal && (
-        <ModalBase onClose={() => setShowEnrolledModal(false)}>
-          <div className="flex flex-col gap-[24px] items-center justify-center w-full">
-            <ModalCompleteIcon className="size-[94px] shrink-0" />
-            <div className="flex flex-col gap-[24px] items-center text-center w-full">
-              <h2 className="text-[32px] font-semibold leading-[32px] text-grey-700 w-full">
-                Enrollment Confirmed!
-              </h2>
-              <p className="text-[20px] font-medium leading-[20px] text-grey-700 w-full">
-                You've successfully enrolled to the{' '}
-                <span className="font-semibold">"{course.title}"</span>{' '}
-                Course!
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowEnrolledModal(false)}
-            className={`${primaryButtonClass} w-full`}
-          >
-            Done
-          </button>
-        </ModalBase>
+        <CourseEnrollmentConfirmedModal
+          courseTitle={course.title}
+          onClose={() => setShowEnrolledModal(false)}
+        />
       )}
 
       {/* ── Enrollment Conflict Modal ───────────────────────────────────── */}
       {conflicts && conflicts.length > 0 && (
-        <ModalBase onClose={() => setConflicts(null)}>
-          <div className="flex flex-col gap-[24px] items-center justify-center w-full">
-            <ModalWarningIcon className="size-[94px] shrink-0" />
-            <div className="flex flex-col gap-[24px] items-center text-center w-full">
-              <h2 className="text-[32px] font-semibold leading-[32px] text-grey-700 w-full">
-                Enrollment Conflict
-              </h2>
-              <div className="text-[20px] font-medium leading-[20px] text-grey-700 w-full">
-                {conflicts.map((c, i) => (
-                  <p key={i}>
-                    You are already enrolled in{' '}
-                    <span className="font-semibold">"{c.conflictingCourseName}"</span>{' '}
-                    with the same schedule: {formatConflictScheduleLabel(c.schedule)}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-[8px] items-center w-full">
-            <button
-              type="button"
-              onClick={() => { setConflicts(null); enrollHandler(true) }}
-              className={`${secondaryButtonClass} flex-1`}
-            >
-              <span className="text-[16px] font-medium leading-[24px] text-primary">Continue Anyway</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setConflicts(null)}
-              className={`${primaryButtonClass} flex-1`}
-            >
-              Cancel
-            </button>
-          </div>
-        </ModalBase>
+        <CourseEnrollmentConflictModal
+          conflicts={conflicts}
+          onContinue={() => {
+            setConflicts(null)
+            enrollHandler(true)
+          }}
+          onCancel={() => setConflicts(null)}
+        />
       )}
 
       {/* ── Complete Profile Modal ──────────────────────────────────────── */}
       {showProfileModal && (
-        <ModalBase onClose={() => setShowProfileModal(false)}>
-          <div className="flex flex-col gap-[24px] items-center justify-center w-full">
-            <ModalUserIcon className="size-[94px] shrink-0" />
-            <div className="flex flex-col gap-[24px] items-center text-center w-full">
-              <h2 className="text-[32px] font-semibold leading-[32px] text-grey-700 w-full">
-                Complete your profile to continue
-              </h2>
-              <p className="text-[20px] font-medium leading-[20px] text-grey-700 w-full">
-                You need to complete your profile before enrolling in this course.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-[8px] items-center w-full">
-            <button
-              type="button"
-              onClick={() => { setShowProfileModal(false); openModal('profile') }}
-              className={`${secondaryButtonClass} flex-1`}
-            >
-              <span className="text-[16px] font-medium leading-[24px] text-primary">Complete Profile</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowProfileModal(false)}
-              className={`${primaryButtonClass} flex-1`}
-            >
-              Cancel
-            </button>
-          </div>
-        </ModalBase>
+        <CourseCompleteProfileModal
+          onCompleteProfile={() => {
+            setShowProfileModal(false)
+            openModal('profile')
+          }}
+          onCancel={() => setShowProfileModal(false)}
+        />
       )}
       </div>
     </div>
   )
 }
-

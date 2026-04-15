@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useModal } from '../../hooks/useModal'
-import { useAuth } from '../../store/AuthContext'
-import { register as registerApi } from '../../api/auth'
-import { parseValidationError } from '../../utils/parseAuthApiError'
-import { primaryButtonClass } from '../ui/buttonStyles'
+import { useModal } from '../../../hooks/useModal'
+import { useAuth } from '../../../store/AuthContext'
+import { register as registerApi } from '../../../api/auth'
+import { parseValidationError } from '../../../utils/parseAuthApiError'
+import { primaryButtonClass } from '../../ui/buttonStyles'
 import {
   AuthModalChrome,
   AuthModalDivider,
@@ -20,8 +20,8 @@ import {
   authTextInputErrorClass,
 } from './AuthModalChrome'
 import AvatarUploadField from './AvatarUploadField'
-import IconEyeOpen from '../../assets/icons/icon-set/icon-eye-open.svg?react'
-import IconEyeClosed from '../../assets/icons/icon-set/icon-eye-closed.svg?react'
+import IconEyeOpen from '../../../assets/icons/icon-set/icon-eye-open.svg?react'
+import IconEyeClosed from '../../../assets/icons/icon-set/icon-eye-closed.svg?react'
 
 const formSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),

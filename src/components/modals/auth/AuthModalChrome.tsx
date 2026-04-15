@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import IconClose from '../../assets/icons/modal/icon-close.svg?react'
-import IconArrowBack from '../../assets/icons/modal/icon-arrow-back.svg?react'
+import IconClose from '../../../assets/icons/modal/icon-close.svg?react'
+import IconArrowBack from '../../../assets/icons/modal/icon-arrow-back.svg?react'
 
 type Props = {
   children: ReactNode

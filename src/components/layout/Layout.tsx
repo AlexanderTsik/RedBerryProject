@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
-import LoginModal from '../modals/LoginModal'
-import RegisterModal from '../modals/RegisterModal'
-import ProfileModal from '../modals/ProfileModal'
+import LoginModal from '../modals/auth/LoginModal'
+import RegisterModal from '../modals/auth/RegisterModal'
+import ProfileModal from '../modals/auth/ProfileModal'
 import EnrolledCoursesSidebar from '../sidebar/EnrolledCoursesSidebar'
 
 export default function Layout() {
